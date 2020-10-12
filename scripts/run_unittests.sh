@@ -2,4 +2,4 @@ set -eu
 set -o pipefail
 set -x
 
-python -m unittest discover
+python3 -m unittest discover
