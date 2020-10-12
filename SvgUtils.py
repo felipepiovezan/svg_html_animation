@@ -1,10 +1,12 @@
 import xml.etree.ElementTree as ET
 
+
 def get_id(root: ET.Element):
     """ Returns the id member of root. Asserts if not present."""
     id = root.get("id")
     assert(id)
     return id
+
 
 def _filter(root: ET.Element, predicate):
     """ Filter the direct children of root according to a predicate."""
@@ -19,3 +21,16 @@ def _filter_tag(root: ET.Element, tag):
     """
 
     return _filter(root, lambda x: x.tag == tag)
+
+
+_svg_namespace = '{http://www.w3.org/2000/svg}'
+_group_tag = _svg_namespace + 'g'
+_path_tag = _svg_namespace + 'path'
+
+
+def svg_groups(root: ET.Element):
+    return _filter_tag(root, _group_tag)
+
+
+def svg_paths(root: ET.Element):
+    return _filter_tag(root, _path_tag)
