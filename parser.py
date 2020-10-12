@@ -68,11 +68,43 @@ class SvgAnimator:
     self.printer.print(f'let {self.paths_to_draw_js} = []')
     self.drawing_idx_js = 'drawing_idx'
     self.printer.print(f'let {self.drawing_idx_js} = 0')
+    self.length_per_ms = .5
+    self.draw_func_js = 'step'
+    self.__print_draw_function()
+  def __print_draw_function(self):
+    current_path_js = f'{self.paths_to_draw_js}[{self.drawing_idx_js}]'
+    self.printer.print(f'''
+    let start;
+    let handle = 0;
+    function {self.draw_func_js}(timestamp) {{
+      if ({self.drawing_idx_js} == {self.paths_to_draw_js}.length) {{
+        window.cancelAnimationFrame(handle);
+        return
+      }}
+
+      if (start === undefined)
+        start = timestamp;
+
+      const elapsed = timestamp - start;
+      const total_time =  {current_path_js}.length / {self.length_per_ms};
+      const percentage = elapsed/total_time
+      const progress = Math.min(1, percentage)
+      {current_path_js}.path.style.strokeDashoffset = Math.floor({current_path_js}.length * (1 - progress));
+      handle = window.requestAnimationFrame(step);
+
+      if (progress === 1) {{
+        start = timestamp;
+        {self.drawing_idx_js}++;
+      }}
+    }}
+    ''')
   def add_path_to_draw(self, path: SvgPath):
     self.printer.print(f'{self.paths_to_draw_js}.push({path.name_js})')
   def add_group_to_draw(self, group: SvgGroup):
     for path in group.paths:
       self.add_path_to_draw(path)
+  def start_animation(self):
+    self.printer.print(f'window.requestAnimationFrame({self.draw_func_js})')
 
 class Hprinter:
     def __init__(self, filename:str):
@@ -99,12 +131,12 @@ doc.svg_from_file("twos_complement.svg")
 doc.end_html()
 doc.begin_script()
 
+animator = SvgAnimator(doc)
 tree = ET.parse('twos_complement.svg')
 root =  tree.getroot();
-group0 = groups(root)[0]
-group0 = SvgGroup(group0, doc)
-group0.clear_strokes()
-
-animator = SvgAnimator(doc)
-animator.add_group_to_draw(group0)
+groups_to_draw = [SvgGroup(group, doc) for group in groups(root)]
+for svg_group in groups_to_draw:
+  svg_group.clear_strokes()
+  animator.add_group_to_draw(svg_group)
+animator.start_animation()
 doc.end_script()
