@@ -10,14 +10,16 @@ root = ET.fromstring('''
   xmlns:svg="http://www.w3.org/2000/svg">
   <g id="group0">
     <path id="path0" />
-    <path/>
   </g>
+  <g/>
+  <path/>
 </svg>
 ''')
 
 group = SvgUtils.svg_groups(root)[0]
+group_no_id = SvgUtils.svg_groups(root)[1]
 path = SvgUtils.svg_paths(group)[0]
-path_no_id = SvgUtils.svg_paths(group)[1]
+path_no_id = SvgUtils.svg_paths(root)[0]
 
 
 class TestSvgJsPath(unittest.TestCase):
@@ -38,6 +40,27 @@ class TestSvgJsPath(unittest.TestCase):
         query_js = 'document.getElementById("path0")'
         self.assertIn(f'{{path: {query_js}', out_str)
         self.assertIn(f', length: {query_js}.getTotalLength()}}', out_str)
+
+
+class TestSvgJsGroup(unittest.TestCase):
+    def test_invalid_init_not_group(self):
+        out = io.StringIO()
+        with self.assertRaises(AssertionError):
+          SvgJsAnimator.SvgJsGroup(root, out)
+
+    def test_valid_init_no_id_and_no_paths(self):
+        out = io.StringIO()
+        js_group = SvgJsAnimator.SvgJsGroup(group_no_id, out)
+        out_str = out.getvalue()
+        self.assertIn(f'{js_group.js_name} = []', out_str)
+
+    def test_ok_group(self):
+        out = io.StringIO()
+        js_group = SvgJsAnimator.SvgJsGroup(group, out)
+        out_str = out.getvalue()
+        self.assertIn(
+            f'{js_group.js_name} = [{js_group.paths[0].js_name}]',
+            out_str)
 
 
 if __name__ == '__main__':
