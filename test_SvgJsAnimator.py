@@ -26,7 +26,7 @@ class TestSvgJsPath(unittest.TestCase):
         with self.assertRaises(AssertionError):
           SvgJsAnimator.SvgJsPath(root, out)
 
-    def test_invalid_init_not_path(self):
+    def test_invalid_init_no_id(self):
         out = io.StringIO()
         with self.assertRaises(AssertionError):
           SvgJsAnimator.SvgJsPath(path_no_id, out)
