@@ -5,7 +5,10 @@ import SvgUtils
 class SvgJsPath:
     """Maps an Svg path to a JavaScript variable.
 
-    This class manipulates aspects of an Svg path through a JS format.
+    This class manipulates aspects of an Svg path through a JS format,
+    defined as a struct `{{path, length}}`, where `path` is the HTML object
+    itself and length is the pre-computed length (equivalent to
+    `path.getTotalLength()`).
 
     It assumes the parent Svg container has been included in an HTML document
     and can be fetched through `document.getElementById`.
@@ -36,9 +39,9 @@ class SvgJsPath:
         self.__declare()
 
     def __declare(self):
-        query_js = f'document.getElementById("{self.html_id}")'
+        js_query = f'document.getElementById("{self.html_id}")'
         print(
-            f'let {self.js_name} = {{path: {query_js}, length: {query_js}.getTotalLength()}}',
+            f'let {self.js_name} = {{path: {js_query}, length: {js_query}.getTotalLength()}}',
             file=self.out)
 
 
