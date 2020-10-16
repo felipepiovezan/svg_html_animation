@@ -90,6 +90,9 @@ class SvgJsAnimator:
     `style.strokeDashoffset`, this class is able to hide or display [pieces of]
     paths. By interacting with the `window.requestAnimationFrame` interface, it
     creates the effect that paths are being drawn.
+
+    No more than one such object should be created for the same file, as it
+    relies on global state for some of its functions.
     """
 
     def __init__(self, out):
@@ -97,6 +100,7 @@ class SvgJsAnimator:
 
         self.print = lambda msg: print(msg, file=out)
         self.js_animation_queue = 'animation_queue'
+        self.animation_queue = set()
         self.js_drawing_idx = 'drawing_idx'
         self.print(f'let {self.js_animation_queue} = []')
         self.print(f'let {self.js_drawing_idx} = 0')
@@ -145,3 +149,15 @@ class SvgJsAnimator:
       }}
     }}
     ''')
+
+    def add_path_to_queue(self, path: SvgJsPath):
+        assert path not in self.animation_queue, "Animation queue must not contain duplicates"
+        self.animation_queue.add(path)
+        self.print(f'{self.js_animation_queue}.push({path.js_name})')
+
+    def add_group_to_queue(self, group: SvgJsGroup):
+        assert 0 == len(self.animation_queue.intersection(
+            group.paths)), "Animation queue must not contain duplicates"
+        self.animation_queue.update(group.paths)
+        self.print(
+            f'{group.js_name}.forEach(function(x) {{ {self.js_animation_queue}.push(x)  }});')
