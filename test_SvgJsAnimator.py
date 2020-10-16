@@ -63,5 +63,21 @@ class TestSvgJsGroup(unittest.TestCase):
             out_str)
 
 
+class TestSvgJsAnimator(unittest.TestCase):
+
+    def test_foo_defs(self):
+        out = io.StringIO()
+        animator = SvgJsAnimator.SvgJsAnimator(out)
+        out_str = out.getvalue()
+        self.assertRegex(
+            out_str,
+            f'''function {animator.js_clear_path_foo}\(.*\) {{
+.*strokeDasharray = (?P<length>.*) \+ " " \+ (?P=length)
+.*strokeDashoffset = (?P=length)''')
+        self.assertRegex(
+            out_str,
+            f'function {animator.js_next_frame_foo}\(.*\) {{')
+
+
 if __name__ == '__main__':
     unittest.main()
