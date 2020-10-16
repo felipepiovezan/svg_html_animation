@@ -13,11 +13,18 @@ root = ET.fromstring('''
   </g>
   <g/>
   <path/>
+
+  <g id="group1">
+    <path id="path10" />
+    <path id="path11" />
+  </g>
+
 </svg>
 ''')
 
 group = SvgUtils.svg_groups(root)[0]
 group_no_id = SvgUtils.svg_groups(root)[1]
+group_two_paths = SvgUtils.svg_groups(root)[2]
 path = SvgUtils.svg_paths(group)[0]
 path_no_id = SvgUtils.svg_paths(root)[0]
 
@@ -77,6 +84,38 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertRegex(
             out_str,
             f'function {animator.js_next_frame_foo}\(.*\) {{')
+
+    def test_repeated_paths(self):
+        out = io.StringIO()
+        pathToAdd = SvgJsAnimator.SvgJsPath(path, out)
+        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator.add_path_to_queue(pathToAdd)
+        with self.assertRaises(AssertionError):
+            animator.add_path_to_queue(pathToAdd)
+        groupToAdd = SvgJsAnimator.SvgJsGroup(group_two_paths, out)
+        animator.add_group_to_queue(groupToAdd)
+        with self.assertRaises(AssertionError):
+            animator.add_group_to_queue(groupToAdd)
+
+    def test_add_path(self):
+        out = io.StringIO()
+        pathToAdd = SvgJsAnimator.SvgJsPath(path, out)
+        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator.add_path_to_queue(pathToAdd)
+        out_str = out.getvalue()
+        self.assertIn(
+            f'{animator.js_animation_queue}.push({pathToAdd.js_name})',
+            out_str)
+
+    def test_add_group(self):
+        out = io.StringIO()
+        groupToAdd = SvgJsAnimator.SvgJsGroup(group_two_paths, out)
+        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator.add_group_to_queue(groupToAdd)
+        out_str = out.getvalue()
+        self.assertIn(
+            f'{groupToAdd.js_name}.forEach(function(x) {{ {animator.js_animation_queue}.push(x)  }});',
+            out_str)
 
 
 if __name__ == '__main__':
