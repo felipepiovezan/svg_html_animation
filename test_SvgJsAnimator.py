@@ -117,6 +117,15 @@ class TestSvgJsAnimator(unittest.TestCase):
             f'{groupToAdd.js_name}.forEach(function(x) {{ {animator.js_animation_queue}.push(x)  }});',
             out_str)
 
+    def test_start_animation(self):
+        out = io.StringIO()
+        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator.start_animation()
+        out_str = out.getvalue()
+        self.assertIn(
+            f'window.requestAnimationFrame({animator.js_next_frame_foo})',
+            out_str)
+
 
 if __name__ == '__main__':
     unittest.main()

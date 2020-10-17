@@ -161,3 +161,7 @@ class SvgJsAnimator:
         self.animation_queue.update(group.paths)
         self.print(
             f'{group.js_name}.forEach(function(x) {{ {self.js_animation_queue}.push(x)  }});')
+
+    def start_animation(self):
+        """Output JS call to function that starts the animation."""
+        self.print(f'window.requestAnimationFrame({self.js_next_frame_foo})')
