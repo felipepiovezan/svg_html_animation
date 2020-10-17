@@ -141,7 +141,7 @@ class SvgJsAnimator:
       const percentage = elapsed/total_time
       const progress = Math.min(1, percentage)
       {js_current_path}.path.style.strokeDashoffset = Math.floor({js_current_path}.length * (1 - progress));
-      handle = window.requestAnimationFrame(step);
+      handle = window.requestAnimationFrame({self.js_next_frame_foo});
 
       if (progress === 1) {{
         start = timestamp;
