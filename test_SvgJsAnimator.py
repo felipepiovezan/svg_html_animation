@@ -88,6 +88,8 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertIn(
             f'window.requestAnimationFrame({animator.js_next_frame_foo})',
             out_str)
+        self.assertIn(
+            "document.addEventListener('keydown', (event) => {", out_str)
 
     def test_repeated_paths(self):
         out = io.StringIO()
