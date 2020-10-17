@@ -33,12 +33,12 @@ class TestSvgJsPath(unittest.TestCase):
     def test_invalid_init_not_path(self):
         out = io.StringIO()
         with self.assertRaises(AssertionError):
-          SvgJsAnimator.SvgJsPath(root, out)
+            SvgJsAnimator.SvgJsPath(root, out)
 
     def test_invalid_init_no_id(self):
         out = io.StringIO()
         with self.assertRaises(AssertionError):
-          SvgJsAnimator.SvgJsPath(path_no_id, out)
+            SvgJsAnimator.SvgJsPath(path_no_id, out)
 
     def test_ok_path(self):
         out = io.StringIO()
@@ -53,7 +53,7 @@ class TestSvgJsGroup(unittest.TestCase):
     def test_invalid_init_not_group(self):
         out = io.StringIO()
         with self.assertRaises(AssertionError):
-          SvgJsAnimator.SvgJsGroup(root, out)
+            SvgJsAnimator.SvgJsGroup(root, out)
 
     def test_valid_init_no_id_and_no_paths(self):
         out = io.StringIO()
@@ -140,7 +140,6 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertIn(
             f'{animator.js_animation_queue}.push({animator.js_stop_animation_event});',
             out_str)
-
 
     def test_start_animation(self):
         out = io.StringIO()
