@@ -84,6 +84,9 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertRegex(
             out_str,
             f'function {animator.js_next_frame_foo}\(.*\) {{')
+        self.assertIn(
+            f'window.requestAnimationFrame({animator.js_next_frame_foo})',
+            out_str)
 
     def test_repeated_paths(self):
         out = io.StringIO()
