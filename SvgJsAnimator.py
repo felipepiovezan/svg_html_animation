@@ -111,8 +111,11 @@ class SvgJsAnimator:
         self.js_clear_path_foo = 'clear_path'
         self._print_clear_path_foo()
 
+        self.js_listen_to_kb = 'listen_to_kb'
+        self.print(f'let {self.js_listen_to_kb} = false')
         self.js_next_frame_foo = 'next_frame'
         self._print_next_frame_foo()
+        self._print_keyboard_event_foo()
 
     def _print_clear_path_foo(self):
         js_path_arg = 'path'
@@ -139,6 +142,7 @@ function {self.js_next_frame_foo}(timestamp) {{
   if ({self.js_animation_queue}[{self.js_drawing_idx}] === {self.js_stop_animation_event}) {{
     {self.js_drawing_idx}++;
     window.cancelAnimationFrame(handle);
+    {self.js_listen_to_kb} = true;
     return
   }}
 
@@ -157,6 +161,26 @@ function {self.js_next_frame_foo}(timestamp) {{
     {self.js_drawing_idx}++;
   }}
 }}''')
+
+    def _print_keyboard_event_foo(self):
+        self.print(f'''
+document.addEventListener('keydown', (event) => {{
+  if ({self.js_listen_to_kb} == false)
+    return;
+  switch (event.key) {{
+    case "Down": // IE/Edge
+    case "ArrowDown":
+    case "Right": // IE/Edge
+    case "ArrowRight":
+    case "Enter":
+    case " ":
+      {self.js_listen_to_kb} = false
+      handle = window.requestAnimationFrame({self.js_next_frame_foo});
+    default:
+      return;
+  }}
+}}, false);
+''')
 
     def add_path_to_queue(self, path: SvgJsPath):
         assert path not in self.animation_queue, "Animation queue must not contain duplicates"
