@@ -106,6 +106,8 @@ class SvgJsAnimator:
         self.print(f'let {self.js_drawing_idx} = 0')
         self.length_per_ms = .5
 
+        self.js_stop_animation_event = '"stop_animation"'
+
         self.js_clear_path_foo = 'clear_path'
         self._print_clear_path_foo()
 
@@ -117,8 +119,10 @@ class SvgJsAnimator:
         js_length = f'{js_path_arg}.length'
         self.print(f'''
 function {self.js_clear_path_foo}({js_path_arg}) {{
-  {js_path_arg}.path.style.strokeDasharray = {js_length} + " " + {js_length}
-  {js_path_arg}.path.style.strokeDashoffset = {js_length}
+  if ({js_path_arg}.hasOwnProperty("path")) {{
+    {js_path_arg}.path.style.strokeDasharray = {js_length} + " " + {js_length}
+    {js_path_arg}.path.style.strokeDashoffset = {js_length}
+  }}
 }}''')
 
     def _print_next_frame_foo(self):
@@ -128,6 +132,12 @@ let start;
 let handle = 0;
 function {self.js_next_frame_foo}(timestamp) {{
   if ({self.js_drawing_idx} == {self.js_animation_queue}.length) {{
+    window.cancelAnimationFrame(handle);
+    return
+  }}
+
+  if ({self.js_animation_queue}[{self.js_drawing_idx}] === {self.js_stop_animation_event}) {{
+    {self.js_drawing_idx}++;
     window.cancelAnimationFrame(handle);
     return
   }}
@@ -159,6 +169,9 @@ function {self.js_next_frame_foo}(timestamp) {{
         self.animation_queue.update(group.paths)
         self.print(
             f'{group.js_name}.forEach(function(x) {{ {self.js_animation_queue}.push(x)  }});')
+
+    def add_stop_event_to_queue(self):
+        self.print(f'{self.js_animation_queue}.push({self.js_stop_animation_event});')
 
     def clear_paths_from_screen(self):
         """Output JS call to function that removes all paths from screen."""

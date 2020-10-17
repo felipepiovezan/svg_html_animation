@@ -79,6 +79,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertRegex(
             out_str,
             f'''function {animator.js_clear_path_foo}\(.*\) {{
+.*if \(.*hasOwnProperty\("path"\)\) {{
 .*strokeDasharray = (?P<length>.*) \+ " " \+ (?P=length)
 .*strokeDashoffset = (?P=length)''')
         self.assertRegex(
@@ -128,6 +129,16 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertIn(
             f'{animator.js_animation_queue}.forEach(function(x) {{ {animator.js_clear_path_foo}(x)  }});',
             out_str)
+
+    def test_add_stop_event(self):
+        out = io.StringIO()
+        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator.add_stop_event_to_queue()
+        out_str = out.getvalue()
+        self.assertIn(
+            f'{animator.js_animation_queue}.push({animator.js_stop_animation_event});',
+            out_str)
+
 
     def test_start_animation(self):
         out = io.StringIO()
