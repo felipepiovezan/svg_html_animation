@@ -195,7 +195,8 @@ document.addEventListener('keydown', (event) => {{
             f'{group.js_name}.forEach(function(x) {{ {self.js_animation_queue}.push(x)  }});')
 
     def add_stop_event_to_queue(self):
-        self.print(f'{self.js_animation_queue}.push({self.js_stop_animation_event});')
+        self.print(
+            f'{self.js_animation_queue}.push({self.js_stop_animation_event});')
 
     def clear_paths_from_screen(self):
         """Output JS call to function that removes all paths from screen."""
