@@ -170,4 +170,5 @@ class SvgJsAnimator:
 
     def start_animation(self):
         """Output JS call to function that starts the animation."""
+
         self.print(f'window.requestAnimationFrame({self.js_next_frame_foo})')
