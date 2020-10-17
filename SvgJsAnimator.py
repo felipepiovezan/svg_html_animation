@@ -116,39 +116,37 @@ class SvgJsAnimator:
         js_path_arg = 'path'
         js_length = f'{js_path_arg}.length'
         self.print(f'''
-        function {self.js_clear_path_foo}({js_path_arg}) {{
-            {js_path_arg}.path.style.strokeDasharray = {js_length} + " " + {js_length}
-            {js_path_arg}.path.style.strokeDashoffset = {js_length}
-        }}
-        ''')
+function {self.js_clear_path_foo}({js_path_arg}) {{
+  {js_path_arg}.path.style.strokeDasharray = {js_length} + " " + {js_length}
+  {js_path_arg}.path.style.strokeDashoffset = {js_length}
+}}''')
 
     def _print_next_frame_foo(self):
         js_current_path = f'{self.js_animation_queue}[{self.js_drawing_idx}]'
         self.print(f'''
-    let start;
-    let handle = 0;
-    function {self.js_next_frame_foo}(timestamp) {{
-      if ({self.js_drawing_idx} == {self.js_animation_queue}.length) {{
-        window.cancelAnimationFrame(handle);
-        return
-      }}
+let start;
+let handle = 0;
+function {self.js_next_frame_foo}(timestamp) {{
+  if ({self.js_drawing_idx} == {self.js_animation_queue}.length) {{
+    window.cancelAnimationFrame(handle);
+    return
+  }}
 
-      if (start === undefined)
-        start = timestamp;
+  if (start === undefined)
+    start = timestamp;
 
-      const elapsed = timestamp - start;
-      const total_time =  {js_current_path}.length / {self.length_per_ms};
-      const percentage = elapsed/total_time
-      const progress = Math.min(1, percentage)
-      {js_current_path}.path.style.strokeDashoffset = Math.floor({js_current_path}.length * (1 - progress));
-      handle = window.requestAnimationFrame({self.js_next_frame_foo});
+  const elapsed = timestamp - start;
+  const total_time =  {js_current_path}.length / {self.length_per_ms};
+  const percentage = elapsed/total_time
+  const progress = Math.min(1, percentage)
+  {js_current_path}.path.style.strokeDashoffset = Math.floor({js_current_path}.length * (1 - progress));
+  handle = window.requestAnimationFrame({self.js_next_frame_foo});
 
-      if (progress === 1) {{
-        start = timestamp;
-        {self.js_drawing_idx}++;
-      }}
-    }}
-    ''')
+  if (progress === 1) {{
+    start = timestamp;
+    {self.js_drawing_idx}++;
+  }}
+}}''')
 
     def add_path_to_queue(self, path: SvgJsPath):
         assert path not in self.animation_queue, "Animation queue must not contain duplicates"
