@@ -162,6 +162,12 @@ class SvgJsAnimator:
         self.print(
             f'{group.js_name}.forEach(function(x) {{ {self.js_animation_queue}.push(x)  }});')
 
+    def clear_paths_from_screen(self):
+        """Output JS call to function that removes all paths from screen."""
+
+        self.print(
+            f'{self.js_animation_queue}.forEach(function(x) {{ {self.js_clear_path_foo}(x)  }});')
+
     def start_animation(self):
         """Output JS call to function that starts the animation."""
         self.print(f'window.requestAnimationFrame({self.js_next_frame_foo})')
