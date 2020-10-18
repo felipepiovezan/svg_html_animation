@@ -75,7 +75,7 @@ class TestSvgJsAnimator(unittest.TestCase):
 
     def test_foo_defs(self):
         out = io.StringIO()
-        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator = SvgJsAnimator.SvgJsAnimator(out, root)
         out_str = out.getvalue()
         self.assertRegex(
             out_str,
@@ -95,7 +95,7 @@ class TestSvgJsAnimator(unittest.TestCase):
     def test_repeated_paths(self):
         out = io.StringIO()
         pathToAdd = SvgJsAnimator.SvgJsPath(path, out)
-        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator = SvgJsAnimator.SvgJsAnimator(out, root)
         animator.add_path_to_queue(pathToAdd)
         with self.assertRaises(AssertionError):
             animator.add_path_to_queue(pathToAdd)
@@ -107,7 +107,7 @@ class TestSvgJsAnimator(unittest.TestCase):
     def test_add_path(self):
         out = io.StringIO()
         pathToAdd = SvgJsAnimator.SvgJsPath(path, out)
-        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator = SvgJsAnimator.SvgJsAnimator(out, root)
         animator.add_path_to_queue(pathToAdd)
         out_str = out.getvalue()
         self.assertIn(
@@ -117,7 +117,7 @@ class TestSvgJsAnimator(unittest.TestCase):
     def test_add_group(self):
         out = io.StringIO()
         groupToAdd = SvgJsAnimator.SvgJsGroup(group_two_paths, out)
-        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator = SvgJsAnimator.SvgJsAnimator(out, root)
         animator.add_group_to_queue(groupToAdd)
         out_str = out.getvalue()
         self.assertIn(
@@ -126,7 +126,7 @@ class TestSvgJsAnimator(unittest.TestCase):
 
     def test_clear_paths(self):
         out = io.StringIO()
-        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator = SvgJsAnimator.SvgJsAnimator(out, root)
         animator.clear_paths_from_screen()
         out_str = out.getvalue()
         self.assertIn(
@@ -135,7 +135,7 @@ class TestSvgJsAnimator(unittest.TestCase):
 
     def test_add_stop_event(self):
         out = io.StringIO()
-        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator = SvgJsAnimator.SvgJsAnimator(out, root)
         animator.add_stop_event_to_queue()
         out_str = out.getvalue()
         self.assertIn(
@@ -144,7 +144,7 @@ class TestSvgJsAnimator(unittest.TestCase):
 
     def test_start_animation(self):
         out = io.StringIO()
-        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator = SvgJsAnimator.SvgJsAnimator(out, root)
         animator.start_animation()
         out_str = out.getvalue()
         self.assertIn(
@@ -153,13 +153,24 @@ class TestSvgJsAnimator(unittest.TestCase):
 
     def test_set_dimensions_to_100pc(self):
         out = io.StringIO()
-        animator = SvgJsAnimator.SvgJsAnimator(out)
-        animator.set_dimensions_to_100pc(root)
+        animator = SvgJsAnimator.SvgJsAnimator(out, root)
         out_str = out.getvalue()
         svg_html_id = root.get("id")
-        js_query = f'document.getElementById("{svg_html_id}")'
-        self.assertIn(f'{js_query}.setAttribute("width" , "100%")', out_str)
-        self.assertIn(f'{js_query}.setAttribute("height", "100%")', out_str)
+        self.assertIn(
+            f'{animator.js_svg_root}.setAttribute("width" , "100%")',
+            out_str)
+        self.assertIn(
+            f'{animator.js_svg_root}.setAttribute("height", "100%")',
+            out_str)
+
+    def test_intialize_camera_to_bb(self):
+        out = io.StringIO()
+        animator = SvgJsAnimator.SvgJsAnimator(out, root)
+        out_str = out.getvalue()
+        self.assertRegex(
+            out_str,
+            f'''let (?P<bbox>.*) = {animator.js_svg_root}.getBBox\(\);
+.*{animator.js_set_camera_foo}\(\[(?P=bbox)''')
 
 
 if __name__ == '__main__':

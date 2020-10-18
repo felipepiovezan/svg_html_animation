@@ -95,10 +95,37 @@ class SvgJsAnimator:
     relies on global state for some of its functions.
     """
 
-    def __init__(self, out):
-        """Prints the boilerplate JS code to `out`."""
+    def __init__(self, out, svg_root: ET.Element):
+        """Prints the boilerplate JS code to `out`.
 
+        Initializes the camera to be the bounding box of the entire svg.
+        Sets the svg height and width to 100%, effectively fitting the entire
+        file to the space allocated for the svg container.
+        """
+
+        # Helper function to print to `out`.
         self.print = lambda msg: print(msg, file=out)
+
+        # Declare variables referencing the svg root.
+        assert svg_root.tag == SvgUtils._svg_tag, "svg_root must have svg tag"
+        root_id = svg_root.get("id")
+        assert root_id is not None, "Top svg node should have an id value"
+        self.js_svg_root = 'svg_root'
+        self.print(
+            f'{self.js_svg_root} = document.getElementById("{root_id}")')
+
+        # Reset root dimensions.
+        self.set_dimensions_to_100pc()
+
+        # Set camera to bounding box of root.
+        self.js_set_camera_foo = 'set_camera'
+        self._print_set_camera_foo()
+        js_root_bb = 'root_bb'
+        self.print(
+            f'let {js_root_bb} = {self.js_svg_root}.getBBox();')
+        self.print(
+            f'{self.js_set_camera_foo}([{js_root_bb}.x, {js_root_bb}.y, {js_root_bb}.width, {js_root_bb}.height])')
+
         self.js_animation_queue = 'animation_queue'
         self.animation_queue = set()
         self.js_drawing_idx = 'drawing_idx'
@@ -182,7 +209,14 @@ document.addEventListener('keydown', (event) => {{
 }}, false);
 ''')
 
-    def set_dimensions_to_100pc(self, svg: ET.Element):
+    def _print_set_camera_foo(self):
+        self.print(f'''
+function {self.js_set_camera_foo}(new_rectangle) {{
+  {self.js_svg_root}.setAttribute("viewBox", new_rectangle.join(" "));
+}}
+''')
+
+    def set_dimensions_to_100pc(self):
         """Remove the `width` and `height` attributes from the SVG node.
 
         If these attributes are empty, they instead become 100%, and the svg
@@ -193,13 +227,8 @@ document.addEventListener('keydown', (event) => {{
         to be those of a rectangle, effectively manipulating the "camera".
         """
 
-        svg_html_id = svg.get("id")
-        assert svg_html_id is not None, "Svg node should have an id value"
-        assert svg.tag == SvgUtils._svg_tag, "Setting dimensions is only possible with SVG node"
-
-        js_query = f'document.getElementById("{svg_html_id}")'
-        self.print(f'{js_query}.setAttribute("width" , "100%")')
-        self.print(f'{js_query}.setAttribute("height", "100%")')
+        self.print(f'{self.js_svg_root}.setAttribute("width" , "100%")')
+        self.print(f'{self.js_svg_root}.setAttribute("height", "100%")')
 
     def add_path_to_queue(self, path: SvgJsPath):
         assert path not in self.animation_queue, "Animation queue must not contain duplicates"
