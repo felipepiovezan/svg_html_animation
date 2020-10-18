@@ -182,6 +182,25 @@ document.addEventListener('keydown', (event) => {{
 }}, false);
 ''')
 
+    def set_dimensions_to_100pc(self, svg: ET.Element):
+        """Remove the `width` and `height` attributes from the SVG node.
+
+        If these attributes are empty, they instead become 100%, and the svg
+        container will take all the space available on the top level container,
+        scaling accordingly.
+
+        This allows further manipulation of the viewbox, setting its dimensions
+        to be those of a rectangle, effectively manipulating the "camera".
+        """
+
+        svg_html_id = svg.get("id")
+        assert svg_html_id is not None, "Svg node should have an id value"
+        assert svg.tag == SvgUtils._svg_tag, "Setting dimensions is only possible with SVG node"
+
+        js_query = f'document.getElementById("{svg_html_id}")'
+        self.print(f'{js_query}.setAttribute("width" , "100%")')
+        self.print(f'{js_query}.setAttribute("height", "100%")')
+
     def add_path_to_queue(self, path: SvgJsPath):
         assert path not in self.animation_queue, "Animation queue must not contain duplicates"
         self.animation_queue.add(path)
