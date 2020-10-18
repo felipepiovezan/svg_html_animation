@@ -26,6 +26,7 @@ def _filter_tag(root: ET.Element, tag):
 _svg_namespace = '{http://www.w3.org/2000/svg}'
 _group_tag = _svg_namespace + 'g'
 _path_tag = _svg_namespace + 'path'
+_svg_tag = _svg_namespace + 'svg'
 
 
 def svg_groups(root: ET.Element):

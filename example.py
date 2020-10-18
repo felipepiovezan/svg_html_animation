@@ -11,6 +11,7 @@ with html.html_ctx():
 with html.js_ctx():
     animator = SvgJsAnimator(html.file)
     root = ET.parse('example.svg').getroot()
+    animator.set_dimensions_to_100pc(root)
     groups_to_draw = [SvgJsGroup(group, html.file)
                       for group in svg_groups(root)]
     [(animator.add_group_to_queue(group), animator.add_stop_event_to_queue())

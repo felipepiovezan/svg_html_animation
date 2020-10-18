@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 
 root = ET.fromstring('''
 <svg
+  id="svg_root"
   xmlns="http://www.w3.org/2000/svg"
   xmlns:svg="http://www.w3.org/2000/svg">
   <g id="group0">
@@ -149,6 +150,16 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertIn(
             f'window.requestAnimationFrame({animator.js_next_frame_foo})',
             out_str)
+
+    def test_set_dimensions_to_100pc(self):
+        out = io.StringIO()
+        animator = SvgJsAnimator.SvgJsAnimator(out)
+        animator.set_dimensions_to_100pc(root)
+        out_str = out.getvalue()
+        svg_html_id = root.get("id")
+        js_query = f'document.getElementById("{svg_html_id}")'
+        self.assertIn(f'{js_query}.setAttribute("width" , "100%")', out_str)
+        self.assertIn(f'{js_query}.setAttribute("height", "100%")', out_str)
 
 
 if __name__ == '__main__':
