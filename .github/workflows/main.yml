@@ -28,6 +28,11 @@ jobs:
           echo Running unittests
           $GITHUB_WORKSPACE/scripts/run_unittests.sh
 
+      - name: End to end test
+        run: |
+          echo Running end-to-end test
+          $GITHUB_WORKSPACE/scripts/run_example.sh
+
       - name: autopep8
         id: autopep8
         uses: peter-evans/autopep8@v1
