@@ -140,6 +140,9 @@ class SvgJsAnimator:
 
         self.js_listen_to_kb = 'listen_to_kb'
         self.print(f'let {self.js_listen_to_kb} = false')
+
+        self.js_process_path_event_foo = 'process_path'
+        self._print_process_path_event_foo()
         self.js_next_frame_foo = 'next_frame'
         self._print_next_frame_foo()
         self._print_keyboard_event_foo()
@@ -154,6 +157,20 @@ function {self.js_clear_path_foo}({js_path_arg}) {{
     {js_path_arg}.path.style.strokeDashoffset = {js_length}
   }}
 }}''')
+
+    def _print_process_path_event_foo(self):
+        self.print(f'''
+// Draws path on the screen based on time elapsed and draw speed.
+// Returns true if the entire path has been drawn.
+function {self.js_process_path_event_foo}(elapsed, speed_in_ms, path) {{
+  const total_time =  path.length / speed_in_ms;
+  const percentage = elapsed/total_time
+  const progress = Math.min(1, percentage)
+  path.path.style.strokeDashoffset = Math.floor(path.length * (1 - progress));
+
+  return progress === 1
+}}
+''')
 
     def _print_next_frame_foo(self):
         js_current_path = f'{self.js_animation_queue}[{self.js_drawing_idx}]'
@@ -177,13 +194,10 @@ function {self.js_next_frame_foo}(timestamp) {{
     start = timestamp;
 
   const elapsed = timestamp - start;
-  const total_time =  {js_current_path}.length / {self.length_per_ms};
-  const percentage = elapsed/total_time
-  const progress = Math.min(1, percentage)
-  {js_current_path}.path.style.strokeDashoffset = Math.floor({js_current_path}.length * (1 - progress));
+  const finished = {self.js_process_path_event_foo}(elapsed, {self.length_per_ms}, {js_current_path})
   handle = window.requestAnimationFrame({self.js_next_frame_foo});
 
-  if (progress === 1) {{
+  if (finished === true) {{
     start = timestamp;
     {self.js_drawing_idx}++;
   }}
