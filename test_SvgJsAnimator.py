@@ -79,15 +79,15 @@ class TestSvgJsAnimator(unittest.TestCase):
         out_str = out.getvalue()
         self.assertRegex(
             out_str,
-            f'''function {animator.js_clear_path_foo}\(.*\) {{
-.*if \(.*hasOwnProperty\("path"\)\) {{
+            f'''function {animator.js_foo_clear_path}\(.*\) {{
+.*if \(.* == {animator.js_kind_path}\) {{
 .*strokeDasharray = (?P<length>.*) \+ " " \+ (?P=length)
 .*strokeDashoffset = (?P=length)''')
         self.assertRegex(
             out_str,
-            f'function {animator.js_next_frame_foo}\(.*\) {{')
+            f'function {animator.js_foo_next_frame}\(.*\) {{')
         self.assertIn(
-            f'window.requestAnimationFrame({animator.js_next_frame_foo})',
+            f'window.requestAnimationFrame({animator.js_foo_next_frame})',
             out_str)
         self.assertIn(
             "document.addEventListener('keydown', (event) => {", out_str)
@@ -111,7 +111,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         animator.add_path_to_queue(pathToAdd)
         out_str = out.getvalue()
         self.assertIn(
-            f'{animator.js_animation_queue}.push({pathToAdd.js_name})',
+            f'{animator.js_animation_queue}.push({{ {animator.js_kind_event} : {animator.js_kind_path}, {animator.js_event_obj} : {pathToAdd.js_name} }})',
             out_str)
 
     def test_add_group(self):
@@ -121,8 +121,9 @@ class TestSvgJsAnimator(unittest.TestCase):
         animator.add_group_to_queue(groupToAdd)
         out_str = out.getvalue()
         self.assertIn(
-            f'{groupToAdd.js_name}.forEach(function(x) {{ {animator.js_animation_queue}.push(x)  }});',
-            out_str)
+            f'''{groupToAdd.js_name}.forEach(function(x) {{
+              {animator.js_animation_queue}.push({{ {animator.js_kind_event} : {animator.js_kind_path}, {animator.js_event_obj} : x }});
+            }});''', out_str)
 
     def test_clear_paths(self):
         out = io.StringIO()
@@ -130,7 +131,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         animator.clear_paths_from_screen()
         out_str = out.getvalue()
         self.assertIn(
-            f'{animator.js_animation_queue}.forEach(function(x) {{ {animator.js_clear_path_foo}(x)  }});',
+            f'{animator.js_animation_queue}.forEach(function(x) {{ {animator.js_foo_clear_path}(x)  }});',
             out_str)
 
     def test_add_stop_event(self):
@@ -139,7 +140,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         animator.add_stop_event_to_queue()
         out_str = out.getvalue()
         self.assertIn(
-            f'{animator.js_animation_queue}.push({animator.js_stop_animation_event});',
+            f'{animator.js_animation_queue}.push({{ {animator.js_kind_event} : {animator.js_kind_stop_animation} }})',
             out_str)
 
     def test_start_animation(self):
@@ -148,7 +149,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         animator.start_animation()
         out_str = out.getvalue()
         self.assertIn(
-            f'window.requestAnimationFrame({animator.js_next_frame_foo})',
+            f'window.requestAnimationFrame({animator.js_foo_next_frame})',
             out_str)
 
     def test_set_dimensions_to_100pc(self):
@@ -170,7 +171,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertRegex(
             out_str,
             f'''let (?P<bbox>.*) = {animator.js_svg_root}.getBBox\(\);
-.*{animator.js_set_camera_foo}\(\[(?P=bbox)''')
+.*{animator.js_foo_set_camera}\(\[(?P=bbox)''')
 
 
 if __name__ == '__main__':
