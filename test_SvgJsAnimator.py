@@ -20,6 +20,11 @@ root = ET.fromstring('''
     <path id="path11" />
   </g>
 
+  <rect id="rect1"
+    x="1"
+    y="2"
+    width="3"
+    height="4"/>
 </svg>
 ''')
 
@@ -172,6 +177,17 @@ class TestSvgJsAnimator(unittest.TestCase):
             out_str,
             f'''let (?P<bbox>.*) = {animator.js_svg_root}.getBBox\(\);
 .*{animator.js_foo_set_camera}\(\[(?P=bbox)''')
+
+    def test_add_camera_event_to_queue(self):
+        out = io.StringIO()
+        animator = SvgJsAnimator.SvgJsAnimator(out, root)
+        animator.add_camera_event_to_queue(SvgUtils.svg_rectangles(root)[0])
+        out_str = out.getvalue()
+        self.assertIn(
+            f'{animator.js_animation_queue}.push({{ '
+            f'{animator.js_kind_event} : {animator.js_kind_camera}, '
+            f'{animator.js_event_obj} : [1, 2, 3, 4] }})',
+            out_str)
 
 
 if __name__ == '__main__':

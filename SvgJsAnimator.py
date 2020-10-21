@@ -127,6 +127,7 @@ class SvgJsAnimator:
         self.js_kind_event = 'type'
         self.js_kind_path = '1'
         self.js_kind_stop_animation = '0'
+        self.js_kind_camera = '2'
         self.js_listen_to_kb = 'listen_to_kb'
         self.js_svg_root = 'svg_root'
 
@@ -169,10 +170,7 @@ function {self.js_foo_clear_path}({js_event_arg}) {{
         self.print(f'''
 // Draws path on the screen based on time elapsed and draw speed.
 // Returns true if the entire path has been drawn.
-function {self.js_foo_process_path_event}(elapsed, speed_in_ms, event, next_frame_cb) {{
-  if (event.{self.js_kind_event} != {self.js_kind_path})
-    return true
-  path_event = event.{self.js_event_obj}
+function {self.js_foo_process_path_event}(elapsed, speed_in_ms, path_event, next_frame_cb) {{
   const length = path_event.length
   path = path_event.path
 
@@ -190,10 +188,9 @@ function {self.js_foo_process_path_event}(elapsed, speed_in_ms, event, next_fram
         self.print(f'''
 // Stops the animation frame callback loop.
 // Always returns true.
-function {self.js_foo_stop_animation}(event, handle) {{
-  if (event.{self.js_kind_event} === {self.js_kind_stop_animation})
-    window.cancelAnimationFrame(handle);
-    {self.js_listen_to_kb} = true;
+function {self.js_foo_stop_animation}(handle) {{
+  window.cancelAnimationFrame(handle);
+  {self.js_listen_to_kb} = true;
   return true
 }}
 ''')
@@ -212,8 +209,16 @@ function {self.js_foo_next_frame}(timestamp) {{
   if (start === undefined)
     start = timestamp;
   const elapsed = timestamp - start;
-  const finished = {self.js_foo_process_path_event}(elapsed, {self.length_per_ms}, {js_current_event}, {self.js_foo_next_frame}) &&
-                   {self.js_foo_stop_animation}({js_current_event}, handle);
+  const event_kind = {js_current_event}.{self.js_kind_event};
+  let finished = false;
+  if (event_kind === {self.js_kind_stop_animation})
+    finished = {self.js_foo_stop_animation}(handle);
+  else if (event_kind === {self.js_kind_path})
+    finished = {self.js_foo_process_path_event}(elapsed, {self.length_per_ms}, {js_current_event}.{self.js_event_obj}, {self.js_foo_next_frame})
+  else if (event_kind === {self.js_kind_camera})
+    finished = {self.js_foo_set_camera}({js_current_event}.{self.js_event_obj})
+  else
+    console.error("Unhandled event kind");
 
   if (finished === true) {{
     start = timestamp;
@@ -245,6 +250,7 @@ document.addEventListener('keydown', (event) => {{
         self.print(f'''
 function {self.js_foo_set_camera}(new_rectangle) {{
   {self.js_svg_root}.setAttribute("viewBox", new_rectangle.join(" "));
+  return true;
 }}
 ''')
 
@@ -291,3 +297,18 @@ function {self.js_foo_set_camera}(new_rectangle) {{
         """Output JS call to function that starts the animation."""
 
         self.print(f'window.requestAnimationFrame({self.js_foo_next_frame})')
+
+    def add_camera_event_to_queue(self, rectangle: ET.Element):
+        """Adds an event to set the camera to the area of rectangle."""
+
+        assert rectangle.tag == SvgUtils._rectangle_tag, "Camera must be set with a Svg Rectangle object."
+        x = rectangle.get("x")
+        y = rectangle.get("y")
+        width = rectangle.get("width")
+        height = rectangle.get("height")
+        assert None not in {
+            x, y, width, height}, "Expected rectangle to have all 4 values"
+        self.print(
+            f'{self.js_animation_queue}.push({{ '
+            f'{self.js_kind_event} : {self.js_kind_camera}, '
+            f'{self.js_event_obj} : [{x}, {y}, {width}, {height}] }});')
