@@ -116,8 +116,9 @@ class TestSvgJsAnimator(unittest.TestCase):
         animator.add_path_to_queue(pathToAdd)
         out_str = out.getvalue()
         self.assertIn(
-            f'{animator.js_animation_queue}.push({{ {animator.js_kind_event} : {animator.js_kind_path}, {animator.js_event_obj} : {pathToAdd.js_name} }})',
-            out_str)
+            f'{animator.js_animation_queue}.push({{ '
+            f'{animator.js_kind_event} : {animator.js_kind_path}, '
+            f'{animator.js_event_obj} : {pathToAdd.js_name} }})', out_str)
 
     def test_add_group(self):
         out = io.StringIO()
@@ -125,10 +126,11 @@ class TestSvgJsAnimator(unittest.TestCase):
         animator = SvgJsAnimator.SvgJsAnimator(out, root)
         animator.add_group_to_queue(groupToAdd)
         out_str = out.getvalue()
-        self.assertIn(
-            f'''{groupToAdd.js_name}.forEach(function(x) {{
-              {animator.js_animation_queue}.push({{ {animator.js_kind_event} : {animator.js_kind_path}, {animator.js_event_obj} : x }});
-            }});''', out_str)
+        self.assertRegex(
+            out_str, rf'{groupToAdd.js_name}.forEach\(function\(x\) {{(?s:.*)'
+            rf'{animator.js_animation_queue}.push\({{.*'
+            f'{animator.js_kind_event} : {animator.js_kind_path},.*'
+            f'{animator.js_event_obj} : x }}')
 
     def test_clear_paths(self):
         out = io.StringIO()
@@ -136,8 +138,8 @@ class TestSvgJsAnimator(unittest.TestCase):
         animator.clear_paths_from_screen()
         out_str = out.getvalue()
         self.assertIn(
-            f'{animator.js_animation_queue}.forEach(function(x) {{ {animator.js_foo_clear_path}(x)  }});',
-            out_str)
+            f'{animator.js_animation_queue}.forEach(function(x) {{ '
+            f'{animator.js_foo_clear_path}(x)  }});', out_str)
 
     def test_add_stop_event(self):
         out = io.StringIO()
@@ -145,7 +147,8 @@ class TestSvgJsAnimator(unittest.TestCase):
         animator.add_stop_event_to_queue()
         out_str = out.getvalue()
         self.assertIn(
-            f'{animator.js_animation_queue}.push({{ {animator.js_kind_event} : {animator.js_kind_stop_animation} }})',
+            f'{animator.js_animation_queue}.push({{ '
+            f'{animator.js_kind_event} : {animator.js_kind_stop_animation} }})',
             out_str)
 
     def test_start_animation(self):
@@ -175,8 +178,8 @@ class TestSvgJsAnimator(unittest.TestCase):
         out_str = out.getvalue()
         self.assertRegex(
             out_str,
-            f'''let (?P<bbox>.*) = {animator.js_svg_root}.getBBox\(\);
-.*{animator.js_foo_set_camera}\(\[(?P=bbox)''')
+            rf'let (?P<bbox>.*) = {animator.js_svg_root}.getBBox\(\);\n'
+            f'.*{animator.js_foo_set_camera}\(\[(?P=bbox)')
 
     def test_add_camera_event_to_queue(self):
         out = io.StringIO()

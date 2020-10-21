@@ -31,7 +31,7 @@ class SvgJsPath:
         """
 
         assert node.tag == SvgUtils._path_tag, "SvgJsPath must be created with an Svg path"
-        self.out = out
+        self.print = lambda msg: print(msg, file=out)
         self.node = node
         self.js_name = SvgJsPath.gen_unique_name()
         self.html_id = node.get("id")
@@ -40,9 +40,9 @@ class SvgJsPath:
 
     def __declare(self):
         js_query = f'document.getElementById("{self.html_id}")'
-        print(
-            f'let {self.js_name} = {{path: {js_query}, length: {js_query}.getTotalLength()}}',
-            file=self.out)
+        self.print(
+            f'let {self.js_name} = {{'
+            f'path: {js_query}, length: {js_query}.getTotalLength()}}')
 
 
 class SvgJsGroup:
@@ -116,6 +116,9 @@ class SvgJsAnimator:
         # Speed in which paths are drawn.
         self.length_per_ms = 1.0
 
+        # Helper variables to write JS code ('js_' prefix)
+        # JS function names are prefixed with 'js_foo_'
+        # JS animation events are prefixed with 'js_kind_'
         self.js_animation_queue = 'animation_queue'
         self.js_drawing_idx = 'drawing_idx'
         self.js_event_obj = 'obj'
@@ -152,7 +155,8 @@ class SvgJsAnimator:
         self.print(
             f'let root_bbox = {self.js_svg_root}.getBBox();')
         self.print(
-            f'{self.js_foo_set_camera}([root_bbox.x, root_bbox.y, root_bbox.width, root_bbox.height])')
+            f'{self.js_foo_set_camera}('
+            f'[root_bbox.x, root_bbox.y, root_bbox.width, root_bbox.height])')
 
     def _print_clear_path_foo(self):
         js_event_arg = 'event'
@@ -170,7 +174,8 @@ function {self.js_foo_clear_path}({js_event_arg}) {{
         self.print(f'''
 // Draws path on the screen based on time elapsed and draw speed.
 // Returns true if the entire path has been drawn.
-function {self.js_foo_process_path_event}(elapsed, speed_in_ms, path_event, next_frame_cb) {{
+function {self.js_foo_process_path_event}'''
+                   f'''(elapsed, speed_in_ms, path_event, next_frame_cb) {{
   const length = path_event.length
   path = path_event.path
 
@@ -197,7 +202,8 @@ function {self.js_foo_stop_animation}(handle) {{
 
     def _print_next_frame_foo(self):
         js_current_event = f'{self.js_animation_queue}[{self.js_drawing_idx}]'
-        self.print(f'''
+        self.print(
+            f'''
 let start;
 let handle = 0;
 function {self.js_foo_next_frame}(timestamp) {{
@@ -214,7 +220,8 @@ function {self.js_foo_next_frame}(timestamp) {{
   if (event_kind === {self.js_kind_stop_animation})
     finished = {self.js_foo_stop_animation}(handle);
   else if (event_kind === {self.js_kind_path})
-    finished = {self.js_foo_process_path_event}(elapsed, {self.length_per_ms}, {js_current_event}.{self.js_event_obj}, {self.js_foo_next_frame})
+    finished = {self.js_foo_process_path_event}(elapsed, {self.length_per_ms}, '''
+            f'''{js_current_event}.{self.js_event_obj}, {self.js_foo_next_frame})
   else if (event_kind === {self.js_kind_camera})
     finished = {self.js_foo_set_camera}({js_current_event}.{self.js_event_obj})
   else
@@ -272,26 +279,32 @@ function {self.js_foo_set_camera}(new_rectangle) {{
         assert path not in self.animation_queue, "Animation queue must not contain duplicates"
         self.animation_queue.add(path)
         self.print(
-            f'{self.js_animation_queue}.push({{ {self.js_kind_event} : {self.js_kind_path}, {self.js_event_obj} : {path.js_name} }})')
+            f'{self.js_animation_queue}.push({{ '
+            f'{self.js_kind_event} : {self.js_kind_path}, '
+            f'{self.js_event_obj} : {path.js_name} }})')
 
     def add_group_to_queue(self, group: SvgJsGroup):
         assert 0 == len(self.animation_queue.intersection(
             group.paths)), "Animation queue must not contain duplicates"
         self.animation_queue.update(group.paths)
         self.print(
-            f'''{group.js_name}.forEach(function(x) {{
-              {self.js_animation_queue}.push({{ {self.js_kind_event} : {self.js_kind_path}, {self.js_event_obj} : x }});
-            }});''')
+            f'{group.js_name}.forEach(function(x) {{\n'
+            f'  {self.js_animation_queue}.push({{ '
+            f'     {self.js_kind_event} : {self.js_kind_path}, '
+            f'     {self.js_event_obj} : x }});'
+            f'}});')
 
     def add_stop_event_to_queue(self):
         self.print(
-            f'{self.js_animation_queue}.push({{ {self.js_kind_event} : {self.js_kind_stop_animation} }});')
+            f'{self.js_animation_queue}.push({{ '
+            f'{self.js_kind_event} : {self.js_kind_stop_animation} }});')
 
     def clear_paths_from_screen(self):
         """Output JS call to function that removes all paths from screen."""
 
         self.print(
-            f'{self.js_animation_queue}.forEach(function(x) {{ {self.js_foo_clear_path}(x)  }});')
+            f'{self.js_animation_queue}.forEach(function(x) {{ '
+            f'{self.js_foo_clear_path}(x)  }});')
 
     def start_animation(self):
         """Output JS call to function that starts the animation."""
