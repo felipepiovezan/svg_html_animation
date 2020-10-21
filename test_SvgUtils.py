@@ -67,6 +67,11 @@ class Input3:
           <path id="path1_0" />
           <path id="path1_1" />
         </g>
+        <rect id="rect1"
+          width="8"
+          height="8"
+          x="8"
+          y="8"/>
       </svg>
       ''')
 
@@ -90,6 +95,10 @@ class Input3:
         tester.assertEqual(Svg.get_id(paths[0]), "path1_0")
         tester.assertEqual(Svg.get_id(paths[1]), "path1_1")
 
+    def inspect_rectangles(rectangles, tester: unittest.TestCase):
+        tester.assertEqual(len(rectangles), 1)
+        tester.assertEqual(Svg.get_id(rectangles[0]), "rect1")
+
 
 class TestSvgMethods(unittest.TestCase):
 
@@ -102,9 +111,11 @@ class TestSvgMethods(unittest.TestCase):
         groups = Svg.svg_groups(Input3.root)
         paths_g0 = Svg.svg_paths(groups[0])
         paths_g1 = Svg.svg_paths(groups[1])
+        rectangles = Svg.svg_rectangles(Input3.root)
         Input3.inspect_paths_root(paths_root, self)
         Input3.inspect_paths_group0(paths_g0, self)
         Input3.inspect_paths_group1(paths_g1, self)
+        Input3.inspect_rectangles(rectangles, self)
 
 
 if __name__ == '__main__':
