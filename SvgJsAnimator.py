@@ -110,8 +110,13 @@ class SvgJsAnimator:
         # Helper function to print to `out`.
         self.print = lambda msg: print(msg, file=out)
 
-        # Unique list of items to be animated.
-        self.animation_queue = set()
+        # Paths in animation must be unique, since they manipulate
+        # properties of unique svg objects
+        self.paths_in_animation = set()
+
+        # Camera events in animation may contain repeated elements,
+        # since they don't change any objects in the screen.
+        self.cameras = []
 
         # Speed in which paths are drawn.
         self.length_per_ms = 1.0
@@ -124,6 +129,7 @@ class SvgJsAnimator:
         self.js_event_obj = 'obj'
         self.js_foo_clear_path = 'clear_path'
         self.js_foo_next_frame = 'next_frame'
+        self.js_foo_process_camera_event = 'process_camera'
         self.js_foo_process_path_event = 'process_path'
         self.js_foo_set_camera = 'set_camera'
         self.js_foo_stop_animation = 'stop_animation'
@@ -146,17 +152,11 @@ class SvgJsAnimator:
         self._print_next_frame_foo()
         self._print_process_path_event_foo()
         self._print_process_stop_animation_event_foo()
+        self._print_process_camera_event_foo()
         self._print_set_camera_foo()
 
         # Reset root dimensions to 100% so that BBox setting works properly.
         self.set_dimensions_to_100pc()
-
-        # Set camera to bounding box of root.
-        self.print(
-            f'let root_bbox = {self.js_svg_root}.getBBox();')
-        self.print(
-            f'{self.js_foo_set_camera}('
-            f'[root_bbox.x, root_bbox.y, root_bbox.width, root_bbox.height])')
 
     def _print_clear_path_foo(self):
         js_event_arg = 'event'
@@ -200,6 +200,29 @@ function {self.js_foo_stop_animation}(handle) {{
 }}
 ''')
 
+    def _print_process_camera_event_foo(self):
+        """Function to create a camera animation.
+
+        Advances each (x, y, width, heigh) component of the camera into the
+        direction of the new camera.
+        """
+
+        self.print(
+            f'function {self.js_foo_process_camera_event} '
+            f'(elapsed, camera_event, next_frame_cb) {{')
+        self.print(f'''
+const old_cam = camera_event.old_cam;
+const new_cam = camera_event.new_cam;
+const duration = camera_event.duration;
+const progress = Math.min(1, elapsed/duration);
+const total_delta = new_cam.map((n, idx) => n - old_cam[idx]);
+const cam = old_cam.map((n, idx) => n + progress * total_delta[idx])
+{self.js_svg_root}.setAttribute("viewBox", cam.join(" "));
+handle = window.requestAnimationFrame(next_frame_cb);
+return progress >= 1;
+        ''')
+        self.print(f'}}')
+
     def _print_next_frame_foo(self):
         js_current_event = f'{self.js_animation_queue}[{self.js_drawing_idx}]'
         self.print(
@@ -223,12 +246,13 @@ function {self.js_foo_next_frame}(timestamp) {{
     finished = {self.js_foo_process_path_event}(elapsed, {self.length_per_ms}, '''
             f'''{js_current_event}.{self.js_event_obj}, {self.js_foo_next_frame})
   else if (event_kind === {self.js_kind_camera})
-    finished = {self.js_foo_set_camera}({js_current_event}.{self.js_event_obj})
+    finished = {self.js_foo_process_camera_event}(elapsed, '''
+            f'''{js_current_event}.{self.js_event_obj}, {self.js_foo_next_frame})
   else
     console.error("Unhandled event kind");
 
   if (finished === true) {{
-    start = timestamp;
+    start = undefined;
     {self.js_drawing_idx}++;
   }}
 }}''')
@@ -276,17 +300,17 @@ function {self.js_foo_set_camera}(new_rectangle) {{
         self.print(f'{self.js_svg_root}.setAttribute("height", "100%")')
 
     def add_path_to_queue(self, path: SvgJsPath):
-        assert path not in self.animation_queue, "Animation queue must not contain duplicates"
-        self.animation_queue.add(path)
+        assert path not in self.paths_in_animation, "Animation queue must not contain duplicates"
+        self.paths_in_animation.add(path)
         self.print(
             f'{self.js_animation_queue}.push({{ '
             f'{self.js_kind_event} : {self.js_kind_path}, '
             f'{self.js_event_obj} : {path.js_name} }})')
 
     def add_group_to_queue(self, group: SvgJsGroup):
-        assert 0 == len(self.animation_queue.intersection(
+        assert 0 == len(self.paths_in_animation.intersection(
             group.paths)), "Animation queue must not contain duplicates"
-        self.animation_queue.update(group.paths)
+        self.paths_in_animation.update(group.paths)
         self.print(
             f'{group.js_name}.forEach(function(x) {{\n'
             f'  {self.js_animation_queue}.push({{ '
@@ -311,17 +335,41 @@ function {self.js_foo_set_camera}(new_rectangle) {{
 
         self.print(f'window.requestAnimationFrame({self.js_foo_next_frame})')
 
-    def add_camera_event_to_queue(self, rectangle: ET.Element):
-        """Adds an event to set the camera to the area of rectangle."""
+    def set_initial_camera(self, rectangle: ET.Element):
+        """Sets the intial camera before the animation starts.
 
-        assert rectangle.tag == SvgUtils._rectangle_tag, "Camera must be set with a Svg Rectangle object."
-        x = rectangle.get("x")
-        y = rectangle.get("y")
-        width = rectangle.get("width")
-        height = rectangle.get("height")
-        assert None not in {
-            x, y, width, height}, "Expected rectangle to have all 4 values"
+        Must be called exactly once before any calls to `add_camera_event_to_queue`.
+        """
+
+        assert len(self.cameras) == 0, "set_initial_camera called incorrectly"
+        new_camera = _convert_rectangle_to_array(rectangle)
+        self.cameras.append(new_camera)
+        new_camera_str = ", ".join(new_camera)
+        self.print(f'let original_camera = [{new_camera_str}]')
+        self.print(f'{self.js_foo_set_camera}(original_camera)')
+
+    def add_camera_event_to_queue(self, rectangle: ET.Element, duration=1000):
+        """Adds an event to set the camera to the area of rectangle.
+
+        Must be called after set_initial_camera.
+        Time is the duration of the animation in ms.
+        """
+
+        old_cam = ", ".join(self.cameras[-1])
+        new_cam = _convert_rectangle_to_array(rectangle)
+        self.cameras.append(new_cam)
+        new_cam = ", ".join(new_cam)
         self.print(
             f'{self.js_animation_queue}.push({{ '
             f'{self.js_kind_event} : {self.js_kind_camera}, '
-            f'{self.js_event_obj} : [{x}, {y}, {width}, {height}] }});')
+            f'{self.js_event_obj} : {{ '
+            f'old_cam : [{old_cam}], new_cam : [{new_cam}], '
+            f'duration : {duration} }} }});')
+
+
+def _convert_rectangle_to_array(rectangle: ET.Element):
+    assert rectangle.tag == SvgUtils._rectangle_tag, "Camera must be set with a Svg Rectangle object."
+    array = [rectangle.get(key)
+             for key in ["x", "y", "width", "height"]]
+    assert None not in array, "Expected rectangle to have all 4 values"
+    return array

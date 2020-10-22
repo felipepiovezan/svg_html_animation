@@ -25,6 +25,11 @@ root = ET.fromstring('''
     y="2"
     width="3"
     height="4"/>
+  <rect id="rect2"
+    x="5"
+    y="6"
+    width="7"
+    height="8"/>
 </svg>
 ''')
 
@@ -172,25 +177,18 @@ class TestSvgJsAnimator(unittest.TestCase):
             f'{animator.js_svg_root}.setAttribute("height", "100%")',
             out_str)
 
-    def test_intialize_camera_to_bb(self):
-        out = io.StringIO()
-        animator = SvgJsAnimator.SvgJsAnimator(out, root)
-        out_str = out.getvalue()
-        self.assertRegex(
-            out_str,
-            rf'let (?P<bbox>.*) = {animator.js_svg_root}.getBBox\(\);\n'
-            f'.*{animator.js_foo_set_camera}\(\[(?P=bbox)')
-
     def test_add_camera_event_to_queue(self):
         out = io.StringIO()
         animator = SvgJsAnimator.SvgJsAnimator(out, root)
-        animator.add_camera_event_to_queue(SvgUtils.svg_rectangles(root)[0])
+        animator.set_initial_camera(SvgUtils.svg_rectangles(root)[0])
+        animator.add_camera_event_to_queue(
+            SvgUtils.svg_rectangles(root)[1], 1234)
         out_str = out.getvalue()
         self.assertIn(
             f'{animator.js_animation_queue}.push({{ '
             f'{animator.js_kind_event} : {animator.js_kind_camera}, '
-            f'{animator.js_event_obj} : [1, 2, 3, 4] }})',
-            out_str)
+            f'{animator.js_event_obj} : {{ old_cam : [1, 2, 3, 4], '
+            f'new_cam : [5, 6, 7, 8], duration : 1234 }} }})', out_str)
 
 
 if __name__ == '__main__':
