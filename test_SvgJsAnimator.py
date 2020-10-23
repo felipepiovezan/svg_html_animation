@@ -109,10 +109,9 @@ class TestSvgJsAnimator(unittest.TestCase):
         animator.add_path_to_queue(pathToAdd)
         with self.assertRaises(AssertionError):
             animator.add_path_to_queue(pathToAdd)
-        groupToAdd = SvgJsAnimator.SvgJsGroup(group_two_paths, out)
-        animator.add_group_to_queue(groupToAdd)
+        animator.add_paths_in_group_to_queue(group_two_paths)
         with self.assertRaises(AssertionError):
-            animator.add_group_to_queue(groupToAdd)
+            animator.add_paths_in_group_to_queue(group_two_paths)
 
     def test_add_path(self):
         out = io.StringIO()
@@ -127,12 +126,11 @@ class TestSvgJsAnimator(unittest.TestCase):
 
     def test_add_group(self):
         out = io.StringIO()
-        groupToAdd = SvgJsAnimator.SvgJsGroup(group_two_paths, out)
         animator = SvgJsAnimator.SvgJsAnimator(out, root)
-        animator.add_group_to_queue(groupToAdd)
+        animator.add_paths_in_group_to_queue(group_two_paths)
         out_str = out.getvalue()
         self.assertRegex(
-            out_str, rf'{groupToAdd.js_name}.forEach\(function\(x\) {{(?s:.*)'
+            out_str, rf'p[0-9]*.forEach\(function\(x\) {{(?s:.*)'
             rf'{animator.js_animation_queue}.push\({{.*'
             f'{animator.js_kind_event} : {animator.js_kind_path},.*'
             f'{animator.js_event_obj} : x }}')

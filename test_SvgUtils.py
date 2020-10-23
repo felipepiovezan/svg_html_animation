@@ -54,6 +54,13 @@ class TestFilterMethods(unittest.TestCase):
         groups = Svg._filter_tag(Input2.root, 'g')
         Input2.inspect_groups(groups, self)
 
+    def test_filter_named(self):
+        g0 = Svg.svg_elements_named("group0", Input1.root)[0]
+        g1 = Svg.svg_elements_named("group1", Input1.root)[0]
+        Input1.inspect_groups([g0, g1], self)
+        empty = Svg.svg_elements_named("", Input2.root)
+        Input2.inspect_groups(empty, self)
+
 
 class Input3:
     root = ET.fromstring('''
