@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 def get_id(root: ET.Element):
     """ Returns the id member of root. Asserts if not present."""
     id = root.get("id")
-    assert(id)
+    assert id
     return id
 
 
@@ -40,3 +40,7 @@ def svg_paths(root: ET.Element):
 
 def svg_rectangles(root: ET.Element):
     return _filter_tag(root, _rectangle_tag)
+
+
+def svg_elements_named(name: str, root: ET.Element):
+    return _filter(root, lambda x: get_id(x) == name)

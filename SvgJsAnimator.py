@@ -108,6 +108,7 @@ class SvgJsAnimator:
         assert root_id is not None, "Top svg node should have an id value"
 
         # Helper function to print to `out`.
+        self.out = out
         self.print = lambda msg: print(msg, file=out)
 
         # Paths in animation must be unique, since they manipulate
@@ -300,23 +301,28 @@ function {self.js_foo_set_camera}(new_rectangle) {{
         self.print(f'{self.js_svg_root}.setAttribute("height", "100%")')
 
     def add_path_to_queue(self, path: SvgJsPath):
-        assert path not in self.paths_in_animation, "Animation queue must not contain duplicates"
-        self.paths_in_animation.add(path)
+        assert path.node not in self.paths_in_animation, "Animation queue must not contain duplicates"
+        self.paths_in_animation.add(path.node)
         self.print(
             f'{self.js_animation_queue}.push({{ '
             f'{self.js_kind_event} : {self.js_kind_path}, '
             f'{self.js_event_obj} : {path.js_name} }})')
 
-    def add_group_to_queue(self, group: SvgJsGroup):
+    def _add_group_to_queue(self, group: SvgJsGroup):
+        path_nodes = [js_path.node for js_path in group.paths]
         assert 0 == len(self.paths_in_animation.intersection(
-            group.paths)), "Animation queue must not contain duplicates"
-        self.paths_in_animation.update(group.paths)
+            path_nodes)), "Animation queue must not contain duplicates"
+        self.paths_in_animation.update(path_nodes)
         self.print(
             f'{group.js_name}.forEach(function(x) {{\n'
             f'  {self.js_animation_queue}.push({{ '
             f'     {self.js_kind_event} : {self.js_kind_path}, '
             f'     {self.js_event_obj} : x }});'
             f'}});')
+
+    def add_paths_in_group_to_queue(self, group: ET.Element):
+        js_group = SvgJsGroup(group, self.out)
+        self._add_group_to_queue(js_group)
 
     def add_stop_event_to_queue(self):
         self.print(
