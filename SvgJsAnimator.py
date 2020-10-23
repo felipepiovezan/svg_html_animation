@@ -160,33 +160,39 @@ class SvgJsAnimator:
         self.set_dimensions_to_100pc()
 
     def _print_clear_path_foo(self):
-        js_event_arg = 'event'
-        js_length = f'{js_event_arg}.{self.js_event_obj}.length'
-        js_path_style = f'{js_event_arg}.{self.js_event_obj}.path.style'
         self.print(f'''
-function {self.js_foo_clear_path}({js_event_arg}) {{
-  if ({js_event_arg}.{self.js_kind_event} == {self.js_kind_path}) {{
-    {js_path_style}.strokeDasharray = {js_length} + " " + {js_length}
-    {js_path_style}.strokeDashoffset = {js_length}
-  }}
+function {self.js_foo_clear_path}(event) {{
+    if (event.{self.js_kind_event} != {self.js_kind_path})
+      return;
+    path_event = event.{self.js_event_obj};
+  path_event.forEach(function(path_and_length) {{
+    const length = path_and_length.length;
+    path = path_and_length.path;
+    path.style.strokeDasharray = length + " " + length;
+    path.style.strokeDashoffset = length;
+  }});
 }}''')
 
     def _print_process_path_event_foo(self):
         self.print(f'''
-// Draws path on the screen based on time elapsed and draw speed.
-// Returns true if the entire path has been drawn.
+// Draws paths on the screen based on time elapsed and draw speed.
+// Returns true if all paths in the event have been drawn.
 function {self.js_foo_process_path_event}'''
                    f'''(elapsed, speed_in_ms, path_event, next_frame_cb) {{
-  const length = path_event.length
-  path = path_event.path
+  completed_all = true;
 
-  const total_time = length / speed_in_ms;
-  const percentage = elapsed/total_time
-  const progress = Math.min(1, percentage)
-  path.style.strokeDashoffset = Math.floor(length * (1 - progress));
+  path_event.forEach(function(path_and_length) {{
+    const length = path_and_length.length;
+    path = path_and_length.path;
+    const total_time = length / speed_in_ms;
+    const percentage = elapsed/total_time;
+    const progress = Math.min(1, percentage);
+    path.style.strokeDashoffset = Math.floor(length * (1 - progress));
+    completed_all &&= (progress === 1);
+  }});
+
   handle = window.requestAnimationFrame(next_frame_cb);
-
-  return progress === 1
+  return completed_all;
 }}
 ''')
 
@@ -306,19 +312,25 @@ function {self.js_foo_set_camera}(new_rectangle) {{
         self.print(
             f'{self.js_animation_queue}.push({{ '
             f'{self.js_kind_event} : {self.js_kind_path}, '
-            f'{self.js_event_obj} : {path.js_name} }})')
+            f'{self.js_event_obj} : [{path.js_name}] }})')
 
-    def _add_group_to_queue(self, group: SvgJsGroup):
+    def _add_group_to_queue(
+            self,
+            group: SvgJsGroup,
+            simultaneously: bool = False):
         path_nodes = [js_path.node for js_path in group.paths]
         assert 0 == len(self.paths_in_animation.intersection(
             path_nodes)), "Animation queue must not contain duplicates"
         self.paths_in_animation.update(path_nodes)
-        self.print(
-            f'{group.js_name}.forEach(function(x) {{\n'
-            f'  {self.js_animation_queue}.push({{ '
-            f'     {self.js_kind_event} : {self.js_kind_path}, '
-            f'     {self.js_event_obj} : x }});'
-            f'}});')
+        if simultaneously:
+            self.print()
+        else:
+            self.print(
+                f'{group.js_name}.forEach(function(x) {{\n'
+                f'  {self.js_animation_queue}.push({{ '
+                f'     {self.js_kind_event} : {self.js_kind_path}, '
+                f'     {self.js_event_obj} : [x] }});'
+                f'}});')
 
     def add_paths_in_group_to_queue(self, group: ET.Element):
         js_group = SvgJsGroup(group, self.out)
