@@ -90,9 +90,14 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertRegex(
             out_str,
             f'''function {animator.js_foo_clear_path}\(.*\) {{
-.*if \(.* == {animator.js_kind_path}\) {{
-.*strokeDasharray = (?P<length>.*) \+ " " \+ (?P=length)
-.*strokeDashoffset = (?P=length)''')
+.*if \(.* != {animator.js_kind_path}\)
+.*return;
+.*(?P<path_event>.*)=.*
+.*(?P=path_event).forEach.*
+.*const (?P<length>[a-z]*) =.*.length;
+.*(?P<path>[a-z]*) =.*.path;
+.*(?P=path).style.strokeDasharray = (?P=length) \+ " " \+ (?P=length);
+.*(?P=path).style.strokeDashoffset = (?P=length);''')
         self.assertRegex(
             out_str,
             f'function {animator.js_foo_next_frame}\(.*\) {{')
@@ -122,7 +127,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertIn(
             f'{animator.js_animation_queue}.push({{ '
             f'{animator.js_kind_event} : {animator.js_kind_path}, '
-            f'{animator.js_event_obj} : {pathToAdd.js_name} }})', out_str)
+            f'{animator.js_event_obj} : [{pathToAdd.js_name}] }})', out_str)
 
     def test_add_group(self):
         out = io.StringIO()
@@ -130,10 +135,10 @@ class TestSvgJsAnimator(unittest.TestCase):
         animator.add_paths_in_group_to_queue(group_two_paths)
         out_str = out.getvalue()
         self.assertRegex(
-            out_str, rf'p[0-9]*.forEach\(function\(x\) {{(?s:.*)'
+            out_str, rf'group[0-9]*.forEach(?s:.*)'
             rf'{animator.js_animation_queue}.push\({{.*'
             f'{animator.js_kind_event} : {animator.js_kind_path},.*'
-            f'{animator.js_event_obj} : x }}')
+            f'{animator.js_event_obj} : \[x\] }}')
 
     def test_clear_paths(self):
         out = io.StringIO()
