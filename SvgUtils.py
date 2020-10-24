@@ -30,6 +30,22 @@ _rectangle_tag = _svg_namespace + 'rect'
 _svg_tag = _svg_namespace + 'svg'
 
 
+def is_group(root: ET.Element):
+    return root.tag == _group_tag
+
+
+def is_path(root: ET.Element):
+    return root.tag == _path_tag
+
+
+def is_root(root: ET.Element):
+    return root.tag == _svg_tag
+
+
+def is_rectangle(root: ET.Element):
+    return root.tag == _rectangle_tag
+
+
 def svg_groups(root: ET.Element):
     return _filter_tag(root, _group_tag)
 

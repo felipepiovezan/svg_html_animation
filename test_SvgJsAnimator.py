@@ -40,20 +40,20 @@ path = SvgUtils.svg_paths(group)[0]
 path_no_id = SvgUtils.svg_paths(root)[0]
 
 
-class TestSvgJsPath(unittest.TestCase):
+class TestPathEvent(unittest.TestCase):
     def test_invalid_init_not_path(self):
         out = io.StringIO()
         with self.assertRaises(AssertionError):
-            SvgJsAnimator.SvgJsPath(root, out)
+            SvgJsAnimator.PathEvent(root, out)
 
     def test_invalid_init_no_id(self):
         out = io.StringIO()
         with self.assertRaises(AssertionError):
-            SvgJsAnimator.SvgJsPath(path_no_id, out)
+            SvgJsAnimator.PathEvent(path_no_id, out)
 
     def test_ok_path(self):
         out = io.StringIO()
-        SvgJsAnimator.SvgJsPath(path, out)
+        SvgJsAnimator.PathEvent(path, out)
         out_str = out.getvalue()
         query_js = 'document.getElementById("path0")'
         self.assertIn(f'{{path: {query_js}', out_str)
@@ -109,7 +109,7 @@ class TestSvgJsAnimator(unittest.TestCase):
 
     def test_repeated_paths(self):
         out = io.StringIO()
-        pathToAdd = SvgJsAnimator.SvgJsPath(path, out)
+        pathToAdd = SvgJsAnimator.PathEvent(path, out)
         animator = SvgJsAnimator.SvgJsAnimator(out, root)
         animator.add_path_to_queue(pathToAdd)
         with self.assertRaises(AssertionError):
@@ -120,7 +120,7 @@ class TestSvgJsAnimator(unittest.TestCase):
 
     def test_add_path(self):
         out = io.StringIO()
-        pathToAdd = SvgJsAnimator.SvgJsPath(path, out)
+        pathToAdd = SvgJsAnimator.PathEvent(path, out)
         animator = SvgJsAnimator.SvgJsAnimator(out, root)
         animator.add_path_to_queue(pathToAdd)
         out_str = out.getvalue()
