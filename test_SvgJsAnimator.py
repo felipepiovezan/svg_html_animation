@@ -126,7 +126,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         out_str = out.getvalue()
         self.assertIn(
             f'{animator.js_animation_queue}.push({{ '
-            f'{animator.js_kind_event} : {animator.js_kind_path}, '
+            f'{animator.js_kind} : {animator.js_kind_path}, '
             f'{animator.js_event_obj} : [{pathToAdd.js_name}] }})', out_str)
 
     def test_add_group(self):
@@ -137,7 +137,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertRegex(
             out_str, rf'group[0-9]*.forEach(?s:.*)'
             rf'{animator.js_animation_queue}.push\({{.*'
-            f'{animator.js_kind_event} : {animator.js_kind_path},.*'
+            f'{animator.js_kind} : {animator.js_kind_path},.*'
             f'{animator.js_event_obj} : \[x\] }}')
 
     def test_clear_paths(self):
@@ -156,7 +156,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         out_str = out.getvalue()
         self.assertIn(
             f'{animator.js_animation_queue}.push({{ '
-            f'{animator.js_kind_event} : {animator.js_kind_stop_animation} }})',
+            f'{animator.js_kind} : {animator.js_kind_stop_animation} }})',
             out_str)
 
     def test_start_animation(self):
@@ -189,7 +189,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         out_str = out.getvalue()
         self.assertIn(
             f'{animator.js_animation_queue}.push({{ '
-            f'{animator.js_kind_event} : {animator.js_kind_camera}, '
+            f'{animator.js_kind} : {animator.js_kind_camera}, '
             f'{animator.js_event_obj} : {{ old_cam : [1, 2, 3, 4], '
             f'new_cam : [5, 6, 7, 8], duration : 1234 }} }})', out_str)
 

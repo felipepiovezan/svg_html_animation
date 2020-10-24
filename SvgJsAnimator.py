@@ -129,15 +129,15 @@ class SvgJsAnimator:
         self.js_drawing_idx = 'drawing_idx'
         self.js_event_obj = 'obj'
         self.js_foo_clear_path = 'clear_path'
+        self.js_foo_event_camera = 'process_camera'
+        self.js_foo_event_camera = 'set_camera'
+        self.js_foo_event_path = 'process_path'
+        self.js_foo_event_stop_animation = 'stop_animation'
         self.js_foo_next_frame = 'next_frame'
-        self.js_foo_process_camera_event = 'process_camera'
-        self.js_foo_process_path_event = 'process_path'
-        self.js_foo_set_camera = 'set_camera'
-        self.js_foo_stop_animation = 'stop_animation'
-        self.js_kind_event = 'type'
+        self.js_kind = 'type'
+        self.js_kind_camera = '0'
         self.js_kind_path = '1'
-        self.js_kind_stop_animation = '0'
-        self.js_kind_camera = '2'
+        self.js_kind_stop_animation = '2'
         self.js_listen_to_kb = 'listen_to_kb'
         self.js_svg_root = 'svg_root'
 
@@ -162,7 +162,7 @@ class SvgJsAnimator:
     def _print_clear_path_foo(self):
         self.print(f'''
 function {self.js_foo_clear_path}(event) {{
-    if (event.{self.js_kind_event} != {self.js_kind_path})
+    if (event.{self.js_kind} != {self.js_kind_path})
       return;
     path_event = event.{self.js_event_obj};
   path_event.forEach(function(path_and_length) {{
@@ -177,7 +177,7 @@ function {self.js_foo_clear_path}(event) {{
         self.print(f'''
 // Draws paths on the screen based on time elapsed and draw speed.
 // Returns true if all paths in the event have been drawn.
-function {self.js_foo_process_path_event}'''
+function {self.js_foo_event_path}'''
                    f'''(elapsed, speed_in_ms, path_event, next_frame_cb) {{
   completed_all = true;
 
@@ -200,7 +200,7 @@ function {self.js_foo_process_path_event}'''
         self.print(f'''
 // Stops the animation frame callback loop.
 // Always returns true.
-function {self.js_foo_stop_animation}(handle) {{
+function {self.js_foo_event_stop_animation}(handle) {{
   window.cancelAnimationFrame(handle);
   {self.js_listen_to_kb} = true;
   return true
@@ -215,7 +215,7 @@ function {self.js_foo_stop_animation}(handle) {{
         """
 
         self.print(
-            f'function {self.js_foo_process_camera_event} '
+            f'function {self.js_foo_event_camera} '
             f'(elapsed, camera_event, next_frame_cb) {{')
         self.print(f'''
 const old_cam = camera_event.old_cam;
@@ -245,15 +245,15 @@ function {self.js_foo_next_frame}(timestamp) {{
   if (start === undefined)
     start = timestamp;
   const elapsed = timestamp - start;
-  const event_kind = {js_current_event}.{self.js_kind_event};
+  const event_kind = {js_current_event}.{self.js_kind};
   let finished = false;
   if (event_kind === {self.js_kind_stop_animation})
-    finished = {self.js_foo_stop_animation}(handle);
+    finished = {self.js_foo_event_stop_animation}(handle);
   else if (event_kind === {self.js_kind_path})
-    finished = {self.js_foo_process_path_event}(elapsed, {self.length_per_ms}, '''
+    finished = {self.js_foo_event_path}(elapsed, {self.length_per_ms}, '''
             f'''{js_current_event}.{self.js_event_obj}, {self.js_foo_next_frame})
   else if (event_kind === {self.js_kind_camera})
-    finished = {self.js_foo_process_camera_event}(elapsed, '''
+    finished = {self.js_foo_event_camera}(elapsed, '''
             f'''{js_current_event}.{self.js_event_obj}, {self.js_foo_next_frame})
   else
     console.error("Unhandled event kind");
@@ -286,7 +286,7 @@ document.addEventListener('keydown', (event) => {{
 
     def _print_set_camera_foo(self):
         self.print(f'''
-function {self.js_foo_set_camera}(new_rectangle) {{
+function {self.js_foo_event_camera}(new_rectangle) {{
   {self.js_svg_root}.setAttribute("viewBox", new_rectangle.join(" "));
   return true;
 }}
@@ -311,7 +311,7 @@ function {self.js_foo_set_camera}(new_rectangle) {{
         self.paths_in_animation.add(path.node)
         self.print(
             f'{self.js_animation_queue}.push({{ '
-            f'{self.js_kind_event} : {self.js_kind_path}, '
+            f'{self.js_kind} : {self.js_kind_path}, '
             f'{self.js_event_obj} : [{path.js_name}] }})')
 
     def _add_group_to_queue(
@@ -328,7 +328,7 @@ function {self.js_foo_set_camera}(new_rectangle) {{
             self.print(
                 f'{group.js_name}.forEach(function(x) {{\n'
                 f'  {self.js_animation_queue}.push({{ '
-                f'     {self.js_kind_event} : {self.js_kind_path}, '
+                f'     {self.js_kind} : {self.js_kind_path}, '
                 f'     {self.js_event_obj} : [x] }});'
                 f'}});')
 
@@ -339,7 +339,7 @@ function {self.js_foo_set_camera}(new_rectangle) {{
     def add_stop_event_to_queue(self):
         self.print(
             f'{self.js_animation_queue}.push({{ '
-            f'{self.js_kind_event} : {self.js_kind_stop_animation} }});')
+            f'{self.js_kind} : {self.js_kind_stop_animation} }});')
 
     def clear_paths_from_screen(self):
         """Output JS call to function that removes all paths from screen."""
@@ -364,7 +364,7 @@ function {self.js_foo_set_camera}(new_rectangle) {{
         self.cameras.append(new_camera)
         new_camera_str = ", ".join(new_camera)
         self.print(f'let original_camera = [{new_camera_str}]')
-        self.print(f'{self.js_foo_set_camera}(original_camera)')
+        self.print(f'{self.js_foo_event_camera}(original_camera)')
 
     def add_camera_event_to_queue(self, rectangle: ET.Element, duration=1000):
         """Adds an event to set the camera to the area of rectangle.
@@ -379,7 +379,7 @@ function {self.js_foo_set_camera}(new_rectangle) {{
         new_cam = ", ".join(new_cam)
         self.print(
             f'{self.js_animation_queue}.push({{ '
-            f'{self.js_kind_event} : {self.js_kind_camera}, '
+            f'{self.js_kind} : {self.js_kind_camera}, '
             f'{self.js_event_obj} : {{ '
             f'old_cam : [{old_cam}], new_cam : [{new_cam}], '
             f'duration : {duration} }} }});')
