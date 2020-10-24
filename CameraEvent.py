@@ -18,7 +18,7 @@ class CameraEvent:
         to undo a CameraEvent in this case will set the camera to a
         meaningless value.
 
-        Note that process_event takes as an argument the number of miliseconds
+        Note that process_event takes as an argument the number of milliseconds
         elapsed since this event began.
         """
 
