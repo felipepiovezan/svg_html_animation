@@ -1,9 +1,5 @@
 import xml.etree.ElementTree as ET
 import SvgUtils
-from CameraEvent import CameraEvent
-from SequentialEventContainer import SequentialEventContainer
-from ParallelEventContainer import ParallelEventContainer
-from PathEvent import PathEvent
 
 
 class SvgJsAnimator:
@@ -45,12 +41,6 @@ class SvgJsAnimator:
 
         # Reset root dimensions to 100% so that BBox setting works properly.
         self.set_dimensions_to_100pc()
-
-        # Print all JS classes
-        ParallelEventContainer.print_js_class(self.out)
-        SequentialEventContainer.print_js_class(self.out)
-        PathEvent.print_js_class(self.out)
-        CameraEvent.print_js_class(self.out)
 
         self.js_event_idx = 'event_idx'
         self.js_event_list = 'event_list'

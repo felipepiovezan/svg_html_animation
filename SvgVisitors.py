@@ -29,10 +29,17 @@ class SimpleVisitor:
     """
 
     def __init__(self, out):
-        """Creates the visitor and use `out` to instantiate each of the Events."""
+        """Creates the visitor and use `out` to instantiate each of the Events.
+
+        A definition of the Event classes is added to `out`.
+        """
 
         self.out = out
         self.cameras = []
+        ParallelEventContainer.print_js_class(self.out)
+        SequentialEventContainer.print_js_class(self.out)
+        PathEvent.print_js_class(self.out)
+        CameraEvent.print_js_class(self.out)
 
     def visit_root(self, node: ET.ElementTree):
         """Create the Event graph, and return it as an array of Events."""
