@@ -38,6 +38,9 @@ class TestSvgJsAnimator(unittest.TestCase):
         cam_event = events[0]
         seq_container = events[1]
         self.assertIn(
+            f'let {animator.js_event_idx} = 0',
+            out)
+        self.assertIn(
             f'let {animator.js_event_list} = [{cam_event.js_name}, {seq_container.js_name}]',
             out)
 
