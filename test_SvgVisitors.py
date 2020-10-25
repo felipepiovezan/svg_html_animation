@@ -29,10 +29,10 @@ class TestSimpleVisitor(unittest.TestCase):
          id="root_id">
          <rect
             id="cam0"
-            x="10"
-            y="20"
-            width="30"
-            height="40"/>
+            x="10.0"
+            y="20.0"
+            width="30.0"
+            height="40.0"/>
          <path id="path0"/>
          <g id="empty_group"/>
          <g id="par_empty_group"/>
@@ -47,7 +47,7 @@ class TestSimpleVisitor(unittest.TestCase):
         cam_event = events[0]
         self.assertIsInstance(cam_event, CameraEvent)
         self.assertEqual(cam_event.duration, 0)
-        self.assertEqual(cam_event.new_cam, [10, 20, 30, 40])
+        self.assertEqual(cam_event.new_cam, [10.0, 20.0, 30.0, 40.0])
 
         path_event = events[1]
         self.assertIsInstance(path_event, PathEvent)
@@ -65,10 +65,10 @@ class TestSimpleVisitor(unittest.TestCase):
          id="root_id">
          <rect
             id="cam0"
-            x="10"
-            y="20"
-            width="30"
-            height="40"/>
+            x="10.0"
+            y="20.0"
+            width="30.0"
+            height="40.0"/>
          <g id="seq_group">
             <path id="path0"/>
             <g id="par_group">
@@ -88,7 +88,7 @@ class TestSimpleVisitor(unittest.TestCase):
         cam_event = events[0]
         self.assertIsInstance(cam_event, CameraEvent)
         self.assertEqual(cam_event.duration, 0)
-        self.assertEqual(cam_event.new_cam, [10, 20, 30, 40])
+        self.assertEqual(cam_event.new_cam, [10.0, 20.0, 30.0, 40.0])
 
         seq_container = events[1]
         self.assertIsInstance(seq_container, SequentialEventContainer)
