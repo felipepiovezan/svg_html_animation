@@ -85,6 +85,7 @@ class SimpleVisitor:
 
 def _convert_rectangle_to_array(rectangle: ET.Element):
     assert rectangle.tag == SvgUtils.rectangle_tag
-    array = [int(rectangle.get(key)) for key in ["x", "y", "width", "height"]]
+    array = [float(rectangle.get(key))
+             for key in ["x", "y", "width", "height"]]
     assert None not in array
     return array
