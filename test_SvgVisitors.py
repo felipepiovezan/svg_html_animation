@@ -22,6 +22,12 @@ class TestSimpleVisitor(unittest.TestCase):
         events = visitor.visit_root(TestSimpleVisitor.empty_root)
         self.assertEqual(len(events), 0)
 
+        out = out.getvalue()
+        self.assertIn('class CameraEvent', out)
+        self.assertIn('class ParallelEventContainer', out)
+        self.assertIn('class PathEvent', out)
+        self.assertIn('class SequentialEventContainer', out)
+
     flat_root = ET.fromstring('''
       <svg
          xmlns="http://www.w3.org/2000/svg"

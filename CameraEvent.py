@@ -63,4 +63,4 @@ class CameraEvent:
 
     def gen_unique_name():
         CameraEvent.gid += 1
-        return 'p' + str(CameraEvent.gid)
+        return '_cam' + str(CameraEvent.gid)
