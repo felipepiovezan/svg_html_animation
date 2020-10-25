@@ -39,20 +39,15 @@ class SequentialEventContainer:
                   this.base_elapsed = elapsed;
 
                 if (this.idx < this.events.length) {{
-                  event_elapsed = elapsed - this.base_elapsed;
-                  finished = this.events[idx].process_event(event_elapsed);
+                  const event_elapsed = elapsed - this.base_elapsed;
+                  const finished = this.events[this.idx].process_event(event_elapsed);
                   if (finished) {{
                     this.base_elapsed = undefined;
                     this.idx++
                   }}
                 }}
 
-                if (this.idx >= this.events.length) {{
-                  this.idx = 0;
-                  return true;
-                }}
-
-                return false;
+                return this.idx >= this.events.length
               }}
             }}''', file=out)
 

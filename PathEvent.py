@@ -56,4 +56,4 @@ class PathEvent:
         return '_path' + str(PathEvent.gid)
 
     # TODO: make this a path paremeter.
-    path_speed = 1.0
+    path_speed = 0.5

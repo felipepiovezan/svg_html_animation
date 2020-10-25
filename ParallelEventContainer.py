@@ -30,6 +30,7 @@ class ParallelEventContainer:
             class ParallelEventContainer {{
               constructor(events) {{
                 this.events = events;
+                this.status = events.map((e) => false);
                 this.base_elapsed = undefined;
               }}
 
@@ -37,16 +38,14 @@ class ParallelEventContainer:
                 if (this.base_elapsed === undefined)
                   this.base_elapsed = elapsed;
 
-                event_elapsed = elapsed - this.base_elapsed;
-                finished = true;
+                const event_elapsed = elapsed - this.base_elapsed;
 
-                this.events.forEach(function(event) {{
-                  finished &&= event.process_event(event_elapsed);
+                this.events.forEach((event, idx) => {{
+                  if (!this.status[idx])
+                    this.status[idx] = event.process_event(event_elapsed);
                 }});
 
-                if (finished)
-                  base_elapsed = undefined;
-                return finished;
+                return this.status.reduce((prev, curr) => prev && curr);
               }}
             }}''', file=out)
 
