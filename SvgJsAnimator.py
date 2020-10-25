@@ -42,7 +42,9 @@ class SvgJsAnimator:
         # Reset root dimensions to 100% so that BBox setting works properly.
         self.set_dimensions_to_100pc()
 
+        # Print variables associated with event list.
         self.js_event_idx = 'event_idx'
+        self.print(f'let {self.js_event_idx} = 0')
         self.js_event_list = 'event_list'
         events_str = ', '.join([event.js_name for event in events])
         self.print(f'let {self.js_event_list} = [{events_str}]')
@@ -58,10 +60,14 @@ class SvgJsAnimator:
     def _print_next_frame_foo(self):
         self.print(f'''
           let handle = 0;
+          let last_timestamp = undefined;
           function {self.js_foo_next_frame}(timestamp) {{
+            if (last_timestamp === undefined)
+              last_timestamp = timestamp
+            timestamp = timestamp - last_timestamp
             if ({self.js_event_idx} == {self.js_event_list}.length) {{
               window.cancelAnimationFrame(handle);
-              return
+              return;
             }}
 
             let finished = {self.js_event_list}[{self.js_event_idx}].process_event(timestamp);
@@ -69,7 +75,10 @@ class SvgJsAnimator:
               window.cancelAnimationFrame(handle);
               {self.js_listen_to_kb} = true;
               {self.js_event_idx}++;
+              last_timestamp = undefined
+              return;
             }}
+            handle = window.requestAnimationFrame({self.js_foo_next_frame});
           }}''')
 
     def _print_keyboard_event_foo(self):
