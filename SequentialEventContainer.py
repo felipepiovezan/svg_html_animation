@@ -19,6 +19,7 @@ class SequentialEventContainer:
         """
 
         self.js_name = SequentialEventContainer.gen_unique_name()
+        self.events = events  # For tests
         list_str = ', '.join([f'{event.js_name}' for event in events])
         print(
             f'let {self.js_name} = new SequentialEventContainer([{list_str}])',
