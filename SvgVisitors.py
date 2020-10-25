@@ -83,7 +83,7 @@ class SimpleVisitor:
         return ParallelEventContainer(events, self.out)
 
     def _visit_rectangle(self, node: ET.ElementTree):
-        duration = 0 if len(self.cameras) == 0 else 1000
+        duration = 0 if len(self.cameras) == 0 else 600
         old_cam = None if len(self.cameras) == 0 else self.cameras[-1]
         new_cam = _convert_rectangle_to_array(node)
         self.cameras.append(new_cam)
