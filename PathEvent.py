@@ -47,6 +47,10 @@ class PathEvent:
                 this.path.style.strokeDasharray = this.length + " " + this.length;
                 this.path.style.strokeDashoffset = this.length;
               }}
+
+              undo() {{
+                this.clear_from_screen();
+              }}
             }}''', file=out)
 
     gid = -1

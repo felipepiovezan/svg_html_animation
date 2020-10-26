@@ -55,6 +55,9 @@ class SvgJsAnimator:
         self.js_foo_next_frame = 'next_frame'
         self._print_next_frame_foo()
 
+        self.js_foo_undo_last_event = 'undo_last_event'
+        self._print_undo_last_event_foo()
+
         self._print_keyboard_event_foo()
 
     def _print_next_frame_foo(self):
@@ -81,6 +84,15 @@ class SvgJsAnimator:
             handle = window.requestAnimationFrame({self.js_foo_next_frame});
           }}''')
 
+    def _print_undo_last_event_foo(self):
+        self.print(f'''
+          function {self.js_foo_undo_last_event}() {{
+            if ({self.js_event_idx} == 0)
+              return;
+            {self.js_event_idx}--;
+            {self.js_event_list}[{self.js_event_idx}].undo();
+          }}''')
+
     def _print_keyboard_event_foo(self):
         self.print(f'''
           document.addEventListener('keydown', (event) => {{
@@ -95,6 +107,15 @@ class SvgJsAnimator:
               case " ":
                 {self.js_listen_to_kb} = false
                 handle = window.requestAnimationFrame({self.js_foo_next_frame});
+                return;
+              case "Up": // IE/Edge
+              case "ArrowUp":
+              case "Left": // IE/Edge
+              case "ArrowLeft":
+                {self.js_listen_to_kb} = false;
+                {self.js_foo_undo_last_event}();
+                {self.js_listen_to_kb} = true;
+                return;
               default:
                 return;
             }}

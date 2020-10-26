@@ -49,6 +49,12 @@ class SequentialEventContainer:
 
                 return this.idx >= this.events.length
               }}
+
+              undo() {{
+                this.base_elapsed = undefined;
+                this.idx = 0;
+                this.events.forEach(e => e.undo());
+              }}
             }}''', file=out)
 
     gid = -1

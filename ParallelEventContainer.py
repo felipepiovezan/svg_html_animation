@@ -47,6 +47,12 @@ class ParallelEventContainer:
 
                 return this.status.reduce((prev, curr) => prev && curr);
               }}
+
+              undo() {{
+                this.status = this.events.map(() => false);
+                this.base_elapsed = undefined;
+                this.events.forEach(e => e.undo());
+              }}
             }}''', file=out)
 
     gid = -1

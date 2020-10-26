@@ -37,6 +37,7 @@ class TestParallelEventContainer(unittest.TestCase):
         self.assertIn('class ParallelEventContainer', buff)
         self.assertIn('constructor(events)', buff)
         self.assertIn('process_event(elapsed)', buff)
+        self.assertIn('undo()', buff)
 
 
 if __name__ == '__main__':
