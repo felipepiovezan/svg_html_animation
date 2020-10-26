@@ -59,6 +59,7 @@ class SvgJsAnimator:
         self._print_undo_last_event_foo()
 
         self._print_keyboard_event_foo()
+        self._print_pointer_event_foo()
 
     def _print_next_frame_foo(self):
         self.print(f'''
@@ -120,6 +121,26 @@ class SvgJsAnimator:
                 return;
             }}
           }}, false);''')
+
+    def _print_pointer_event_foo(self):
+        self.print(f'''
+          function pointerdown_handler(event) {{
+            if (!{self.js_listen_to_kb} || !event.isPrimary)
+              return;
+            const svg_width = {self.js_svg_root}.clientWidth;
+            if (event.clientX > .7 * svg_width) {{
+              {self.js_listen_to_kb} = false
+              handle = window.requestAnimationFrame({self.js_foo_next_frame});
+            }}
+            else if (event.clientX < .3 * svg_width) {{
+                {self.js_listen_to_kb} = false;
+                {self.js_foo_undo_last_event}();
+                {self.js_listen_to_kb} = true;
+            }}
+          }}
+          // Note the use of `svg_root` as opposed to `document`, since we
+          // we only process click events targeting the SVG area.
+          {self.js_svg_root}.onpointerdown = pointerdown_handler;''')
 
     def set_dimensions_to_100pc(self):
         """Remove the `width` and `height` attributes from the SVG node.
