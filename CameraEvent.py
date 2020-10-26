@@ -15,8 +15,7 @@ class CameraEvent:
 
         If the value of `old_cam` is None, e.g. during the start of the
         animation when it is meaningless, duration  must equal 0. Attempting
-        to undo a CameraEvent in this case will set the camera to a
-        meaningless value.
+        to undo a CameraEvent in this case will do nothing.
 
         Note that process_event takes as an argument the number of milliseconds
         elapsed since this event began.
@@ -56,6 +55,11 @@ class CameraEvent:
                 const cam = this.old_cam.map((n, idx) => n + progress * total_delta[idx])
                 this.root.setAttribute("viewBox", cam.join(" "));
                 return progress === 1;
+              }}
+
+              undo() {{
+                if (typeof this.old_cam !== "undefined")
+                  this.root.setAttribute("viewBox", this.old_cam.join(" "));
               }}
             }}''', file=out)
 

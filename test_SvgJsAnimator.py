@@ -45,6 +45,7 @@ class TestSvgJsAnimator(unittest.TestCase):
             out)
 
         self.assertIn(f'function {animator.js_foo_next_frame}', out)
+        self.assertIn(f'function {animator.js_foo_undo_last_event}', out)
         self.assertIn(
             f'{animator.js_svg_root}.setAttribute("width" , "100%")', out)
         self.assertIn(
