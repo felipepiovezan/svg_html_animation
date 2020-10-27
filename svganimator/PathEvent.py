@@ -1,4 +1,4 @@
-import SvgUtils
+from svganimator import SvgUtils
 import xml.etree.ElementTree as ET
 
 

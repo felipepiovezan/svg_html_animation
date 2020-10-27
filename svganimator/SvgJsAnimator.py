@@ -1,5 +1,5 @@
+from svganimator import SvgUtils
 import xml.etree.ElementTree as ET
-import SvgUtils
 
 
 class SvgJsAnimator:

@@ -1,9 +1,9 @@
+from svganimator import SvgUtils
+from svganimator.PathEvent import PathEvent
+from svganimator.SequentialEventContainer import SequentialEventContainer
 import io
-from PathEvent import PathEvent
-from SequentialEventContainer import SequentialEventContainer
-import SvgUtils
-import xml.etree.ElementTree as ET
 import unittest
+import xml.etree.ElementTree as ET
 
 
 class TestSequentialEventContainer(unittest.TestCase):

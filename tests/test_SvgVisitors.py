@@ -1,8 +1,8 @@
-from CameraEvent import CameraEvent
-from ParallelEventContainer import ParallelEventContainer
-from PathEvent import PathEvent
-from SequentialEventContainer import SequentialEventContainer
-from SvgVisitors import SimpleVisitor
+from svganimator.CameraEvent import CameraEvent
+from svganimator.ParallelEventContainer import ParallelEventContainer
+from svganimator.PathEvent import PathEvent
+from svganimator.SequentialEventContainer import SequentialEventContainer
+from svganimator.SvgVisitors import SimpleVisitor
 import io
 import unittest
 import xml.etree.ElementTree as ET

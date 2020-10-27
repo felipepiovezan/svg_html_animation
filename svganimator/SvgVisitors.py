@@ -1,8 +1,8 @@
-from CameraEvent import CameraEvent
-from SequentialEventContainer import SequentialEventContainer
-from ParallelEventContainer import ParallelEventContainer
-from PathEvent import PathEvent
-import SvgUtils
+from svganimator import SvgUtils
+from svganimator.CameraEvent import CameraEvent
+from svganimator.ParallelEventContainer import ParallelEventContainer
+from svganimator.PathEvent import PathEvent
+from svganimator.SequentialEventContainer import SequentialEventContainer
 import xml.etree.ElementTree as ET
 
 

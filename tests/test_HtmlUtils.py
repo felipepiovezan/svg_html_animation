@@ -1,5 +1,5 @@
+from svganimator import HtmlUtils as Html
 import io
-import HtmlUtils as Html
 import unittest
 
 

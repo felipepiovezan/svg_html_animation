@@ -1,5 +1,5 @@
+from svganimator import SvgUtils as Svg
 import unittest
-import SvgUtils as Svg
 import xml.etree.ElementTree as ET
 
 

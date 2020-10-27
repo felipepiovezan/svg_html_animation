@@ -1,5 +1,5 @@
-from SvgVisitors import SimpleVisitor
-from SvgJsAnimator import SvgJsAnimator
+from svganimator.SvgJsAnimator import SvgJsAnimator
+from svganimator.SvgVisitors import SimpleVisitor
 import io
 import unittest
 import xml.etree.ElementTree as ET
