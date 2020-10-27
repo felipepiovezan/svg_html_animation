@@ -4,8 +4,9 @@ from svganimator.SvgJsAnimator import SvgJsAnimator
 import xml.etree.ElementTree as ET
 import sys
 
-assert len(sys.argv) == 2, "Incorrect number of arguments"
+assert len(sys.argv) == 3, "Incorrect number of arguments"
 svg_filename = sys.argv[1]
+output_filename = sys.argv[2]
 
 html = HtmlPrinter("temp.html")
 with html.html_ctx():
