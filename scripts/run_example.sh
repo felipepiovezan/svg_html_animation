@@ -2,4 +2,4 @@ set -eu
 set -o pipefail
 set -x
 
-python3 example.py
+PYTHONPATH=. python3 examples/example.py examples/example.svg

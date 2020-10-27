@@ -1,7 +1,7 @@
 import io
-from CameraEvent import CameraEvent
-import SvgUtils
-import HtmlUtils as Html
+from svganimator.CameraEvent import CameraEvent
+from svganimator import SvgUtils
+from svganimator import HtmlUtils as Html
 import xml.etree.ElementTree as ET
 import unittest
 

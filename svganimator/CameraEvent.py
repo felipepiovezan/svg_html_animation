@@ -1,4 +1,4 @@
-import SvgUtils
+from svganimator import SvgUtils
 
 
 class CameraEvent:
