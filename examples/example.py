@@ -8,7 +8,7 @@ assert len(sys.argv) == 3, "Incorrect number of arguments"
 svg_filename = sys.argv[1]
 output_filename = sys.argv[2]
 
-html = HtmlPrinter("temp.html")
+html = HtmlPrinter(output_filename)
 with html.html_ctx():
     with open(svg_filename, "r") as svg_file:
         html.print(svg_file.read())
