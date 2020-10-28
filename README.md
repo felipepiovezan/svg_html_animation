@@ -1,10 +1,14 @@
 # Hand drawn animation of SVG files with HTML
 
 This python package converts an SVG file into an HTML page containing
-animations of each SVG element, such that the drawing look as if they were
-being hand drawn.
+animations of each SVG element, such that the drawing looks as if it were
+being hand-drawn.
 
 ## Using the script
+
+There is a video showing the whole process
+[here](they://www.youtube.com/watch?v=MjYMQuLoW8M), but I recommend reading the
+section below first.
 
 1. Organize your SVG file accordingly (see [The SVG layout](#the-svg-layout)).
   1. This can be done with your favorite SVG editor.
@@ -16,8 +20,7 @@ PYTHONPATH=. python3 examples/example.py <svg_file> <output.html>
 
 Open `<output.html>` with a browser.
 
-(This has yet to be published as a python package)
-
+This has yet to be published as a proper python package.
 
 ## The SVG layout
 
@@ -56,7 +59,9 @@ order in which they appear in the `.svg` file.
 
 ## Converting the SVG graph to an animation
 
-The idea is to visit the graph and create an animation according to some rules:
+By organizing an SVG file as a graph, we impose an order between nodes of the
+graph. This order is then going to be exploited to create an animation by
+visiting nodes and applying some rules to them:
 
 * The graph is visited with a depth-first search.
 * If a path is encountered, a hand-writing animation is generated.
