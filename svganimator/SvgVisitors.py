@@ -11,8 +11,8 @@ class SimpleVisitor:
 
     This class visits the SVG graph starting from the root in DFS order.
     For each node it visits:
-      1. If it is a Path node, a PathEvent is created. Path nodes are assumed
-      to be leaves.
+      1. If it is a Path or Circle node, a PathEvent is created. Path nodes are
+      assumed to be leaves.
       2. If it is a Rectangle node, a CameraEvent is created. The first such
       CameraEvent encountered has duration of 0ms and is assumed to have no
       previous camera associated with it. Rectangle nodes are assumed to be
@@ -52,7 +52,7 @@ class SimpleVisitor:
         return events
 
     def _visit(self, node: ET.ElementTree):
-        if SvgUtils.is_path(node):
+        if SvgUtils.is_path(node) or SvgUtils.is_circle(node):
             return self._visit_path(node)
         if SvgUtils.is_group(node):
             return self._visit_group(node)

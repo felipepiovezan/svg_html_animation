@@ -26,6 +26,7 @@ def filter_tag(root: ET.Element, tag):
 
 
 svg_namespace = '{http://www.w3.org/2000/svg}'
+circle_tag = svg_namespace + 'circle'
 group_tag = svg_namespace + 'g'
 path_tag = svg_namespace + 'path'
 rectangle_tag = svg_namespace + 'rect'
@@ -61,6 +62,12 @@ def is_rectangle(root: ET.Element):
     return root.tag == rectangle_tag
 
 
+def is_circle(root: ET.Element):
+    """Returns true if root is an SVG circle."""
+
+    return root.tag == circle_tag
+
+
 def svg_groups(root: ET.Element):
     """Returns direct children of root that are SVG groups."""
 
@@ -77,3 +84,9 @@ def svg_rectangles(root: ET.Element):
     """Returns direct children of root that are SVG rectangles."""
 
     return filter_tag(root, rectangle_tag)
+
+
+def svg_circles(root: ET.Element):
+    """Returns direct children of root that are SVG circles."""
+
+    return filter_tag(root, circle_tag)

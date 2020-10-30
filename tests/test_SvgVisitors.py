@@ -79,7 +79,7 @@ class TestSimpleVisitor(unittest.TestCase):
             <path id="path0"/>
             <g id="par_group">
               <path id="path1"/>
-              <path id="path2"/>
+              <circle id="path2"/>
               <path id="path3"/>
             </g>
          </g>

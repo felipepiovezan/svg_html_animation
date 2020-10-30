@@ -6,7 +6,10 @@ class PathEvent:
     """Class to create a path animation.
 
     Manipulates the style.strokeDasharray and style.strokeDashoffset properties
-    of paths in order to create the illusion of a path drawing itself.
+    of paths or circles in order to create the illusion of a path drawing
+    itself.
+    This class can be expanded for other objects, as long as they have the two
+    properties above.
     """
 
     def __init__(self, node: ET.Element, out):
@@ -16,7 +19,7 @@ class PathEvent:
         elapsed since this event began.
         """
 
-        assert SvgUtils.is_path(node)
+        assert SvgUtils.is_path(node) or SvgUtils.is_circle(node)
 
         html_id = SvgUtils.get_id(node)
         js_query = f'document.getElementById("{html_id}")'
@@ -60,4 +63,4 @@ class PathEvent:
         return '_path' + str(PathEvent.gid)
 
     # TODO: make this a path paremeter.
-    path_speed = 0.8
+    path_speed = 0.3
