@@ -60,7 +60,8 @@ class SequentialEventContainer:
               undo() {{
                 this.base_elapsed = undefined;
                 this.idx = 0;
-                this.events.forEach(e => e.undo());
+                // forEach can't iterate backwards, so use reduceRight.
+                this.events.reduceRight((_, e) => e.undo(), null);
               }}
             }}''', file=out)
 
