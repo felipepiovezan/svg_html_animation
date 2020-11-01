@@ -84,7 +84,7 @@ class TestCameraEvent(unittest.TestCase):
 
         self.assertIn('class CameraEvent', out)
         self.assertIn('constructor(old_cam, new_cam, duration, root) {', out)
-        self.assertIn('process_event(elapsed)', out)
+        self.assertIn('process_event(elapsed, finish_requested)', out)
         self.assertIn('undo()', out)
 
 

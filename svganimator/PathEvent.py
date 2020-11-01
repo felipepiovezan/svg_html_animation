@@ -35,9 +35,11 @@ class PathEvent:
 
               // Draws paths on the screen based on time elapsed and draw speed.
               // Returns true if the path has been drawn entirely.
-              process_event(elapsed) {{
+              process_event(elapsed, finish_requested) {{
                 const percentage = elapsed/this.total_time;
-                const progress = Math.min(1, percentage);
+                let progress = Math.min(1, percentage);
+                if (finish_requested)
+                  progress = 1
                 this.path.style.strokeDashoffset = Math.floor(this.length * (1 - progress));
                 return progress === 1;
               }}

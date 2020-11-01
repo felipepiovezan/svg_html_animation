@@ -31,7 +31,7 @@ class TestPathEvent(unittest.TestCase):
         out = buff.getvalue()
         self.assertIn('class PathEvent', out)
         self.assertIn('constructor(path)', out)
-        self.assertIn('process_event(elapsed)', out)
+        self.assertIn('process_event(elapsed, finish_requested)', out)
         self.assertIn('clear_from_screen()', out)
         self.assertIn('undo()', out)
 

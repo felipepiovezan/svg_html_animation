@@ -34,15 +34,22 @@ class SequentialEventContainer:
                 this.idx = 0;
               }}
 
-              process_event(elapsed) {{
+              process_event(elapsed, finish_requested) {{
                 if (this.base_elapsed === undefined)
                   this.base_elapsed = elapsed;
 
                 if (this.idx < this.events.length) {{
                   const event_elapsed = elapsed - this.base_elapsed;
-                  const finished = this.events[this.idx].process_event(event_elapsed);
+                  const finished = this.events[this.idx].process_event(event_elapsed, finish_requested);
                   if (finished) {{
                     this.base_elapsed = undefined;
+                    this.idx++
+                  }}
+                }}
+
+                if (finish_requested) {{
+                  while(this.idx < this.events.length) {{
+                    this.events[this.idx].process_event(0, finish_requested);
                     this.idx++
                   }}
                 }}

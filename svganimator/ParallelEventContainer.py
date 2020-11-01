@@ -34,7 +34,7 @@ class ParallelEventContainer:
                 this.base_elapsed = undefined;
               }}
 
-              process_event(elapsed) {{
+              process_event(elapsed, finish_requested) {{
                 if (this.base_elapsed === undefined)
                   this.base_elapsed = elapsed;
 
@@ -42,7 +42,7 @@ class ParallelEventContainer:
 
                 this.events.forEach((event, idx) => {{
                   if (!this.status[idx])
-                    this.status[idx] = event.process_event(event_elapsed);
+                    this.status[idx] = event.process_event(event_elapsed, finish_requested);
                 }});
 
                 return this.status.reduce((prev, curr) => prev && curr);
