@@ -4,6 +4,7 @@ from svganimator.ParallelEventContainer import ParallelEventContainer
 from svganimator.PathEvent import PathEvent
 from svganimator.SequentialEventContainer import SequentialEventContainer
 import xml.etree.ElementTree as ET
+import re
 
 
 class SimpleVisitor:
@@ -15,8 +16,9 @@ class SimpleVisitor:
       to be leaves.
       2. If it is a Rectangle node, a CameraEvent is created. The first such
       CameraEvent encountered has duration of 0ms and is assumed to have no
-      previous camera associated with it. Rectangle nodes are assumed to be
-      leaves.
+      previous camera associated with it. If the name of the camera contains a
+      substring `d=<number>`, the camera event will have duration `number`
+      miliseconds. Rectangle nodes are assumed to be leaves.
       3. If it is a Group node:
         - If its name starts with "par_", a ParallelEventContainer is created.
         - Otherwise, a SequentialEventContainer is created.
@@ -86,8 +88,18 @@ class SimpleVisitor:
                 f'has {len(events)} elements')
         return ParallelEventContainer(events, self.out)
 
+    def _get_camera_duration(self, name):
+        duration = 1000
+        if len(self.cameras) == 0:
+            duration = 0
+        match = re.match(r'.*d=(\d+).*', name)
+        if match:
+            duration = int(match.group(1))
+        return duration
+
     def _visit_rectangle(self, node: ET.ElementTree):
-        duration = 0 if len(self.cameras) == 0 else 600
+        name = str(SvgUtils.get_id(node))
+        duration = self._get_camera_duration(name)
         old_cam = None if len(self.cameras) == 0 else self.cameras[-1]
         new_cam = _convert_rectangle_to_array(node)
         self.cameras.append(new_cam)

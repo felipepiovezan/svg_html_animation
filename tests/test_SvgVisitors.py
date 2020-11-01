@@ -83,17 +83,24 @@ class TestSimpleVisitor(unittest.TestCase):
               <path id="path3"/>
             </g>
          </g>
+         <rect
+            id="cam0d=4242"
+            x="20.0"
+            y="20.0"
+            width="20.0"
+            height="20.0"/>
       </svg>''')
 
     def test_grouped_root(self):
         out = io.StringIO()
         visitor = SimpleVisitor(out)
         events = visitor.visit_root(TestSimpleVisitor.nested_root)
-        self.assertEqual(len(events), 2)
+        self.assertEqual(len(events), 3)
 
         cam_event = events[0]
         self.assertIsInstance(cam_event, CameraEvent)
         self.assertEqual(cam_event.duration, 0)
+        self.assertIsNone(cam_event.old_cam)
         self.assertEqual(cam_event.new_cam, [10.0, 20.0, 30.0, 40.0])
 
         seq_container = events[1]
@@ -108,6 +115,12 @@ class TestSimpleVisitor(unittest.TestCase):
         self.assertEqual(len(nested2_events), 3)
         for event in nested2_events:
             self.assertIsInstance(event, PathEvent)
+
+        cam_event2 = events[2]
+        self.assertIsInstance(cam_event2, CameraEvent)
+        self.assertEqual(cam_event2.duration, 4242)
+        self.assertEqual(cam_event2.old_cam, [10.0, 20.0, 30.0, 40.0])
+        self.assertEqual(cam_event2.new_cam, [20.0, 20.0, 20.0, 20.0])
 
 
 if __name__ == '__main__':
