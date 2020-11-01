@@ -65,17 +65,20 @@ class SvgJsAnimator:
         self.print(f'''
           let handle = 0;
           let last_timestamp = undefined;
+          let user_finish_requested = false;
           function {self.js_foo_next_frame}(timestamp) {{
-            if (last_timestamp === undefined)
-              last_timestamp = timestamp
-            timestamp = timestamp - last_timestamp
             if ({self.js_event_idx} == {self.js_event_list}.length) {{
               window.cancelAnimationFrame(handle);
               {self.js_ongoing_animation} = false;
               return;
             }}
 
-            let finished = {self.js_event_list}[{self.js_event_idx}].process_event(timestamp);
+            if (last_timestamp === undefined)
+              last_timestamp = timestamp
+            timestamp = timestamp - last_timestamp
+
+            const finished = {self.js_event_list}[{self.js_event_idx}].process_event(timestamp, user_finish_requested);
+            user_finish_requested = false;
             if (finished) {{
               window.cancelAnimationFrame(handle);
               {self.js_ongoing_animation} = false;
@@ -99,9 +102,11 @@ class SvgJsAnimator:
     def _print_keyboard_event_foo(self):
         self.print(f'''
           function onNextInput() {{
-            if (!{self.js_ongoing_animation}) {{
-              handle = window.requestAnimationFrame({self.js_foo_next_frame});
+            if ({self.js_ongoing_animation}) {{
+              user_finish_requested = true;
+              return;
             }}
+            handle = window.requestAnimationFrame({self.js_foo_next_frame});
           }}
           function onPreviousInput() {{
             if (!{self.js_ongoing_animation}) {{

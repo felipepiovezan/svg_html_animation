@@ -45,12 +45,14 @@ class CameraEvent:
                 this.root = root;
               }}
 
-              process_event(elapsed) {{
+              process_event(elapsed, finish_requested) {{
                 if (this.duration === 0) {{
                   this.root.setAttribute("viewBox", this.new_cam.join(" "));
                   return true;
                 }}
-                const progress = Math.min(1, elapsed / this.duration);
+                let progress = Math.min(1, elapsed / this.duration);
+                if (finish_requested)
+                  progress = 1
                 const total_delta = this.new_cam.map((n, idx) => n - this.old_cam[idx]);
                 const cam = this.old_cam.map((n, idx) => n + progress * total_delta[idx])
                 this.root.setAttribute("viewBox", cam.join(" "));

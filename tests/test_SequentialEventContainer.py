@@ -36,7 +36,7 @@ class TestSequentialEventContainer(unittest.TestCase):
         buff = buff.getvalue()
         self.assertIn('class SequentialEventContainer', buff)
         self.assertIn('constructor(events)', buff)
-        self.assertIn('process_event(elapsed)', buff)
+        self.assertIn('process_event(elapsed, finish_requested)', buff)
         self.assertIn('undo()', buff)
 
 
