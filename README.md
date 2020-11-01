@@ -65,7 +65,10 @@ visiting nodes and applying some rules to them:
 
 * The graph is visited with a depth-first search.
 * If a path is encountered, a hand-writing animation is generated.
-* If a rectangle is encountered, a camera-movement animation is generated.
+* If a rectangle is encountered, a camera movement is generated. This
+animation will have duration 0ms for the first camera encountered, 1000ms
+otherwise. It can be overwritten by adding `d=some_integer_in_ms` in the svg
+rectangle name.
 * If a group whose name starts with `par_` is encountered, its children
 will be animated in parallel.
 * If a group with any other name is encountered, its children will be
