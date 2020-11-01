@@ -7,7 +7,7 @@ being hand-drawn.
 ## Using the script
 
 There is a video showing the whole process
-[here](they://www.youtube.com/watch?v=MjYMQuLoW8M), but I recommend reading the
+[here](https://www.youtube.com/watch?v=MjYMQuLoW8M), but I recommend reading the
 section below first.
 
 1. Organize your SVG file accordingly (see [The SVG layout](#the-svg-layout)).
