@@ -80,6 +80,10 @@ class SimpleVisitor:
     def _visit_parallel_group(self, node: ET.ElementTree):
         events = [self._visit(child) for child in node]
         events = [event for event in events if event]
+        if len(events) < 2:
+            print(
+                f'Warning: parallel group {SvgUtils.get_id(node)} '
+                f'has {len(events)} elements')
         return ParallelEventContainer(events, self.out)
 
     def _visit_rectangle(self, node: ET.ElementTree):
