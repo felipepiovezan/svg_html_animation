@@ -49,8 +49,8 @@ class SvgJsAnimator:
         events_str = ', '.join([event.js_name for event in events])
         self.print(f'let {self.js_event_list} = [{events_str}]')
 
-        self.js_listen_to_kb = 'listen_to_kb'
-        self.print(f'let {self.js_listen_to_kb} = false')
+        self.js_ongoing_animation = 'ongoing_animation'
+        self.print(f'let {self.js_ongoing_animation} = true')
 
         self.js_foo_next_frame = 'next_frame'
         self._print_next_frame_foo()
@@ -71,17 +71,19 @@ class SvgJsAnimator:
             timestamp = timestamp - last_timestamp
             if ({self.js_event_idx} == {self.js_event_list}.length) {{
               window.cancelAnimationFrame(handle);
+              {self.js_ongoing_animation} = false;
               return;
             }}
 
             let finished = {self.js_event_list}[{self.js_event_idx}].process_event(timestamp);
             if (finished) {{
               window.cancelAnimationFrame(handle);
-              {self.js_listen_to_kb} = true;
+              {self.js_ongoing_animation} = false;
               {self.js_event_idx}++;
               last_timestamp = undefined
               return;
             }}
+            {self.js_ongoing_animation} = true;
             handle = window.requestAnimationFrame({self.js_foo_next_frame});
           }}''')
 
@@ -96,9 +98,19 @@ class SvgJsAnimator:
 
     def _print_keyboard_event_foo(self):
         self.print(f'''
+          function onNextInput() {{
+            if (!{self.js_ongoing_animation}) {{
+              handle = window.requestAnimationFrame({self.js_foo_next_frame});
+            }}
+          }}
+          function onPreviousInput() {{
+            if (!{self.js_ongoing_animation}) {{
+              {self.js_foo_undo_last_event}();
+            }}
+          }}
+        ''')
+        self.print(f'''
           document.addEventListener('keydown', (event) => {{
-            if ({self.js_listen_to_kb} == false)
-              return;
             switch (event.key) {{
               case "Down": // IE/Edge
               case "ArrowDown":
@@ -106,16 +118,13 @@ class SvgJsAnimator:
               case "ArrowRight":
               case "Enter":
               case " ":
-                {self.js_listen_to_kb} = false
-                handle = window.requestAnimationFrame({self.js_foo_next_frame});
+                onNextInput();
                 return;
               case "Up": // IE/Edge
               case "ArrowUp":
               case "Left": // IE/Edge
               case "ArrowLeft":
-                {self.js_listen_to_kb} = false;
-                {self.js_foo_undo_last_event}();
-                {self.js_listen_to_kb} = true;
+                onPreviousInput();
                 return;
               default:
                 return;
@@ -125,17 +134,16 @@ class SvgJsAnimator:
     def _print_pointer_event_foo(self):
         self.print(f'''
           function pointerdown_handler(event) {{
-            if (!{self.js_listen_to_kb} || !event.isPrimary)
+            if (!event.isPrimary)
               return;
             const svg_width = {self.js_svg_root}.clientWidth;
             if (event.clientX > .7 * svg_width) {{
-              {self.js_listen_to_kb} = false
-              handle = window.requestAnimationFrame({self.js_foo_next_frame});
+              onNextInput();
+              return;
             }}
-            else if (event.clientX < .3 * svg_width) {{
-                {self.js_listen_to_kb} = false;
-                {self.js_foo_undo_last_event}();
-                {self.js_listen_to_kb} = true;
+            if (event.clientX < .3 * svg_width) {{
+              onPreviousInput();
+              return;
             }}
           }}
           // Note the use of `svg_root` as opposed to `document`, since we
