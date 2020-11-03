@@ -49,7 +49,7 @@ class TestSvgJsAnimator(unittest.TestCase):
         self.assertIn(
             f'{animator.js_svg_root}.setAttribute("width" , "100%")', out)
         self.assertIn(
-            f'{animator.js_svg_root}.setAttribute("height", "100%")', out)
+            f'{animator.js_svg_root}.setAttribute("height", "80%")', out)
         self.assertIn(f"document.addEventListener('keydown', (event)", out)
         self.assertIn(
             f'{animator.js_svg_root}.onpointerdown = pointerdown_handler;',

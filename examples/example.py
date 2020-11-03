@@ -10,6 +10,8 @@ output_filename = sys.argv[2]
 
 html = HtmlPrinter(output_filename)
 with html.html_ctx():
+    with open('examples/instructions.svg', "r") as svg_file:
+        html.print(svg_file.read())
     with open(svg_filename, "r") as svg_file:
         html.print(svg_file.read())
 

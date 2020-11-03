@@ -17,9 +17,7 @@ class SvgJsAnimator:
     def __init__(self, out, events, svg_root: ET.Element):
         """Prints the boilerplate JS code to `out`.
 
-        Initializes the camera to be the bounding box of the entire svg.
-        Sets the svg height and width to 100%, effectively fitting the entire
-        file to the space allocated for the svg container.
+        Sets the svg width to 100%, height to 80%.
 
         The animation event queue is set to `events`, which must be an array
         of [Path|Camera]Events or [Parallel|Sequential]Containers.
@@ -39,8 +37,7 @@ class SvgJsAnimator:
         self.print(
             f'{self.js_svg_root} = document.getElementById("{root_id}")')
 
-        # Reset root dimensions to 100% so that BBox setting works properly.
-        self.set_dimensions_to_100pc()
+        self._set_dimensions()
 
         # Print variables associated with event list.
         self.js_event_idx = 'event_idx'
@@ -155,19 +152,20 @@ class SvgJsAnimator:
           // we only process click events targeting the SVG area.
           {self.js_svg_root}.onpointerdown = pointerdown_handler;''')
 
-    def set_dimensions_to_100pc(self):
+    def _set_dimensions(self):
         """Remove the `width` and `height` attributes from the SVG node.
 
-        If these attributes are empty, they instead become 100%, and the svg
-        container will take all the space available on the top level container,
-        scaling accordingly.
+        By using %s instead of absolute values, we can manipulate the viewbox,
+        setting its dimensions to be those of a rectangle, effectively
+        manipulating the "camera".
 
-        This allows further manipulation of the viewbox, setting its dimensions
-        to be those of a rectangle, effectively manipulating the "camera".
+        Sets width to 100%, so our click/tap detection works on the full spectrum
+        of the screen.
+        Sets height to 80%, so we have space for other things in the screen.
         """
 
         self.print(f'{self.js_svg_root}.setAttribute("width" , "100%")')
-        self.print(f'{self.js_svg_root}.setAttribute("height", "100%")')
+        self.print(f'{self.js_svg_root}.setAttribute("height", "80%")')
 
     def start_animation(self):
         """Output JS call to function that starts the animation."""
