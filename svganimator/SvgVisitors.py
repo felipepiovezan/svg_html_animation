@@ -100,8 +100,8 @@ class SimpleVisitor:
     def _visit_rectangle(self, node: ET.ElementTree):
         name = str(SvgUtils.get_id(node))
         duration = self._get_camera_duration(name)
-        old_cam = None if len(self.cameras) == 0 else self.cameras[-1]
         new_cam = _convert_rectangle_to_array(node)
+        old_cam = new_cam if len(self.cameras) == 0 else self.cameras[-1]
         self.cameras.append(new_cam)
         return CameraEvent(old_cam, new_cam, duration, self.svg_root, self.out)
 
