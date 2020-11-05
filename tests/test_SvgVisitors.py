@@ -100,7 +100,7 @@ class TestSimpleVisitor(unittest.TestCase):
         cam_event = events[0]
         self.assertIsInstance(cam_event, CameraEvent)
         self.assertEqual(cam_event.duration, 0)
-        self.assertIsNone(cam_event.old_cam)
+        self.assertEqual(cam_event.old_cam, cam_event.new_cam)
         self.assertEqual(cam_event.new_cam, [10.0, 20.0, 30.0, 40.0])
 
         seq_container = events[1]

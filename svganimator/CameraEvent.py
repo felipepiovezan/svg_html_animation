@@ -12,16 +12,11 @@ class CameraEvent:
         """Create a new camera event for svg_root.
 
         Duration = 0 implies immediately setting the camera to `new_cam`
-
-        If the value of `old_cam` is None, e.g. during the start of the
-        animation when it is meaningless, duration  must equal 0. Attempting
-        to undo a CameraEvent in this case will do nothing.
-
-        Note that process_event takes as an argument the number of milliseconds
-        elapsed since this event began.
+        For the first camera event, `old_cam` should be set to `new_cam`, in
+        which case there will be no camera motion.
         """
 
-        assert duration == 0 or old_cam is not None
+        assert old_cam is not None and new_cam is not None
         assert SvgUtils.is_root(svg_root)
         root_id = SvgUtils.get_id(svg_root)
 
@@ -41,20 +36,29 @@ class CameraEvent:
               constructor(old_cam, new_cam, duration, root) {{
                 this.old_cam = old_cam;
                 this.new_cam = new_cam;
+                this.total_delta = new_cam.map((n, idx) => n - old_cam[idx]);
                 this.duration = duration;
                 this.root = root;
               }}
 
+              static smoothing(percentage) {{
+                // doubleExponentialSigmoid
+                const param = 0.727;
+                if (percentage <= 0.5)
+                  return Math.pow(2. * percentage, 1./param) / 2.;
+                return 1 - Math.pow(2. * (1 - percentage), 1./param) / 2.;;
+              }}
+
+              progress(elapsed, finish_requested) {{
+                if (this.duration === 0 || finish_requested)
+                  return 1;
+                const percentage = Math.min(1, elapsed / this.duration);
+                return CameraEvent.smoothing(percentage);
+              }}
+
               process_event(elapsed, finish_requested) {{
-                if (this.duration === 0) {{
-                  this.root.setAttribute("viewBox", this.new_cam.join(" "));
-                  return true;
-                }}
-                let progress = Math.min(1, elapsed / this.duration);
-                if (finish_requested)
-                  progress = 1
-                const total_delta = this.new_cam.map((n, idx) => n - this.old_cam[idx]);
-                const cam = this.old_cam.map((n, idx) => n + progress * total_delta[idx])
+                const progress = this.progress(elapsed, finish_requested)
+                const cam = this.old_cam.map((n, idx) => n + progress * this.total_delta[idx])
                 this.root.setAttribute("viewBox", cam.join(" "));
                 return progress === 1;
               }}

@@ -46,7 +46,7 @@ class TestCameraEvent(unittest.TestCase):
         buff = io.StringIO()
 
         event = CameraEvent(
-            None,
+            new_cam,
             new_cam,
             duration,
             TestCameraEvent.root,
@@ -54,7 +54,7 @@ class TestCameraEvent(unittest.TestCase):
 
         self.assertIsNotNone(event.js_name)
         self.assertEqual(event.new_cam, new_cam)
-        self.assertIsNone(event.old_cam)
+        self.assertEqual(event.old_cam, new_cam)
         self.assertEqual(event.duration, duration)
 
         root_id = SvgUtils.get_id(TestCameraEvent.root)
@@ -62,7 +62,7 @@ class TestCameraEvent(unittest.TestCase):
 
         self.assertRegex(
             out, rf'{event.js_name} = new CameraEvent\('
-            f'undefined, \[4, 5, 6, 7\], {duration}, {root_id}\)')
+            f'\[4, 5, 6, 7\], \[4, 5, 6, 7\], {duration}, {root_id}\)')
 
     def test_ctor_no_old_cam_not_zero_duration(self):
         new_cam = [4, 5, 6, 7]
