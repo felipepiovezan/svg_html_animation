@@ -1,4 +1,5 @@
 from svganimator import SvgUtils as Svg
+import io
 import unittest
 import xml.etree.ElementTree as ET
 
@@ -139,6 +140,17 @@ class TestSvgMethods(unittest.TestCase):
         Input3.inspect_paths_group0(paths_g0, self)
         Input3.inspect_paths_group1(paths_g1, self)
         Input3.inspect_rectangles(rectangles, self)
+
+
+class TestHideNode(unittest.TestCase):
+    def test_hide_node(self):
+        for group in Svg.svg_groups(Input3.root):
+            node_id = Svg.get_id(group)
+            buff = io.StringIO()
+            Svg.hide_svg_obj(group, buff)
+            self.assertIn(
+                f'let obj = document.getElementById("{node_id}");\n'
+                f'obj.style.opacity = 0', buff.getvalue())
 
 
 if __name__ == '__main__':
