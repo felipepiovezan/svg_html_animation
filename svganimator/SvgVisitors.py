@@ -103,6 +103,7 @@ class SimpleVisitor:
         new_cam = _convert_rectangle_to_array(node)
         old_cam = new_cam if len(self.cameras) == 0 else self.cameras[-1]
         self.cameras.append(new_cam)
+        SvgUtils.hide_svg_obj(node, self.out)
         return CameraEvent(old_cam, new_cam, duration, self.svg_root, self.out)
 
 

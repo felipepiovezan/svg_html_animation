@@ -77,3 +77,18 @@ def svg_rectangles(root: ET.Element):
     """Returns direct children of root that are SVG rectangles."""
 
     return filter_tag(root, rectangle_tag)
+
+
+def hide_svg_obj(node, out):
+    """Print the commands necessary to hide node from the screen.
+
+    Note: not a member function because the rectangle is not part of the
+    object.
+    """
+
+    def out_print(x): return print(x, file=out)
+    node_id = get_id(node)
+    out_print('{')
+    out_print(f'let obj = document.getElementById("{node_id}");')
+    out_print('obj.style.opacity = 0')
+    out_print('}')
