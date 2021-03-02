@@ -2,6 +2,7 @@ from svganimator import SvgUtils
 from svganimator.CameraEvent import CameraEvent
 from svganimator.ParallelEventContainer import ParallelEventContainer
 from svganimator.PathEvent import PathEvent
+from svganimator.CircleEvent import CircleEvent
 from svganimator.SequentialEventContainer import SequentialEventContainer
 import xml.etree.ElementTree as ET
 import re
@@ -42,6 +43,7 @@ class SimpleVisitor:
         SequentialEventContainer.print_js_class(self.out)
         PathEvent.print_js_class(self.out)
         CameraEvent.print_js_class(self.out)
+        CircleEvent.print_js_class(self.out)
 
     def visit_root(self, node: ET.ElementTree):
         """Create the Event graph, and return it as an array of Events."""
@@ -54,6 +56,8 @@ class SimpleVisitor:
         return events
 
     def _visit(self, node: ET.ElementTree):
+        if SvgUtils.is_circle(node):
+            return self._visit_circle(node)
         if SvgUtils.is_path(node):
             return self._visit_path(node)
         if SvgUtils.is_group(node):
@@ -64,6 +68,9 @@ class SimpleVisitor:
             f'Warning: ignroring SVG node: {SvgUtils.get_id(node)}, '
             f'type = {node.tag}')
         return None
+
+    def _visit_circle(self, node: ET.ElementTree):
+        return CircleEvent(node, self.out)
 
     def _visit_path(self, node: ET.ElementTree):
         return PathEvent(node, self.out)

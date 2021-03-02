@@ -80,6 +80,7 @@ class Input3:
           height="8"
           x="8"
           y="8"/>
+        <circle id="circle1"/>
       </svg>
       ''')
 
@@ -106,6 +107,10 @@ class Input3:
     def inspect_rectangles(rectangles, tester: unittest.TestCase):
         tester.assertEqual(len(rectangles), 1)
         tester.assertEqual(Svg.get_id(rectangles[0]), "rect1")
+
+    def inspect_circles(circles, tester: unittest.TestCase):
+        tester.assertEqual(len(circles), 1)
+        tester.assertEqual(Svg.get_id(circles[0]), 'circle1')
 
 
 class TestSvgMethods(unittest.TestCase):
@@ -136,10 +141,15 @@ class TestSvgMethods(unittest.TestCase):
         for rectangle in rectangles:
             self.assertTrue(Svg.is_rectangle(rectangle))
 
+        circles = Svg.svg_circles(Input3.root)
+        for circle in circles:
+            self.assertTrue(Svg.is_circle(circle))
+
         Input3.inspect_paths_root(paths_root, self)
         Input3.inspect_paths_group0(paths_g0, self)
         Input3.inspect_paths_group1(paths_g1, self)
         Input3.inspect_rectangles(rectangles, self)
+        Input3.inspect_circles(circles, self)
 
 
 class TestHideNode(unittest.TestCase):
