@@ -2,7 +2,7 @@ from svganimator import SvgUtils
 from svganimator.CameraEvent import CameraEvent
 from svganimator.ParallelEventContainer import ParallelEventContainer
 from svganimator.PathEvent import PathEvent
-from svganimator.CircleEvent import CircleEvent
+from svganimator.FadeEvent import FadeEvent
 from svganimator.SequentialEventContainer import SequentialEventContainer
 import xml.etree.ElementTree as ET
 import re
@@ -43,7 +43,7 @@ class SimpleVisitor:
         SequentialEventContainer.print_js_class(self.out)
         PathEvent.print_js_class(self.out)
         CameraEvent.print_js_class(self.out)
-        CircleEvent.print_js_class(self.out)
+        FadeEvent.print_js_class(self.out)
 
     def visit_root(self, node: ET.ElementTree):
         """Create the Event graph, and return it as an array of Events."""
@@ -70,7 +70,7 @@ class SimpleVisitor:
         return None
 
     def _visit_circle(self, node: ET.ElementTree):
-        return CircleEvent(node, self.out)
+        return FadeEvent(node, self.out)
 
     def _visit_path(self, node: ET.ElementTree):
         return PathEvent(node, self.out)
