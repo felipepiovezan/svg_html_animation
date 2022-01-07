@@ -11,7 +11,7 @@ class FadeEvent:
     The time taken to reach full opacity is proportional to the perimeter.
     """
 
-    def __init__(self, node: ET.Element, out):
+    def __init__(self, node: ET.Element, out, time):
         """Creates a FadeEvent from an SVG Circle node.
 
         Note that process_event takes as an argument the number of milliseconds
@@ -21,13 +21,15 @@ class FadeEvent:
         html_id = SvgUtils.get_id(node)
         js_query = f'document.getElementById("{html_id}")'
         self.js_name = FadeEvent.gen_unique_name()
-        print(f'let {self.js_name} = new FadeEvent({js_query})', file=out)
+        print(
+            f'let {self.js_name} = new FadeEvent({js_query}, {time})',
+            file=out)
         print(f'{self.js_name}.clear_from_screen()', file=out)
 
     def print_js_class(out):
         print(f'''
             class FadeEvent {{
-              constructor(obj, total_time = 0.1) {{
+              constructor(obj, total_time) {{
                 this.obj = obj;
                 this.total_time = total_time;
               }}

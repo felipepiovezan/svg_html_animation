@@ -18,11 +18,11 @@ class TestFadeEvent(unittest.TestCase):
 
     def test_ctor(self):
         buff = io.StringIO()
-        event = FadeEvent(TestFadeEvent.circle, buff)
+        event = FadeEvent(TestFadeEvent.circle, buff, 42)
         self.assertIsNotNone(event.js_name)
 
         out = buff.getvalue()
-        self.assertRegex(out, f'let {event.js_name} = new FadeEvent')
+        self.assertRegex(out, f'let {event.js_name} = new FadeEvent(.*, 42)')
         self.assertRegex(out, f'{event.js_name}.clear_from_screen()')
 
     def test_print_class(self):
@@ -30,7 +30,7 @@ class TestFadeEvent(unittest.TestCase):
         FadeEvent.print_js_class(buff)
         out = buff.getvalue()
         self.assertIn('class FadeEvent', out)
-        self.assertIn('constructor(obj, total_time = 0.1)', out)
+        self.assertIn('constructor(obj, total_time)', out)
         self.assertIn('process_event(elapsed, finish_requested)', out)
         self.assertIn('clear_from_screen()', out)
         self.assertIn('undo()', out)
