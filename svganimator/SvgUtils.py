@@ -31,6 +31,7 @@ group_tag = svg_namespace + 'g'
 path_tag = svg_namespace + 'path'
 rectangle_tag = svg_namespace + 'rect'
 svg_tag = svg_namespace + 'svg'
+image_tag = svg_namespace + 'use'
 
 
 def svg_elements_named(name: str, root: ET.Element):
@@ -42,6 +43,12 @@ def is_circle(root: ET.Element):
     """Returns true if root is an SVG circle."""
 
     return root.tag == circle_tag
+
+
+def is_image(root: ET.Element):
+    """Returns true if root is an image use."""
+
+    return root.tag == image_tag
 
 
 def is_group(root: ET.Element):
