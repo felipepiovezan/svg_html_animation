@@ -70,7 +70,7 @@ class SimpleVisitor:
         return None
 
     def _visit_circle(self, node: ET.ElementTree):
-        return FadeEvent(node, self.out)
+        return FadeEvent(node, self.out, 1)
 
     def _visit_path(self, node: ET.ElementTree):
         return PathEvent(node, self.out)
