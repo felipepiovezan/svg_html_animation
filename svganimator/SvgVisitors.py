@@ -58,6 +58,8 @@ class SimpleVisitor:
     def _visit(self, node: ET.ElementTree):
         if SvgUtils.is_circle(node):
             return self._visit_circle(node)
+        if SvgUtils.is_image(node):
+            return self._visit_image(node)
         if SvgUtils.is_path(node):
             return self._visit_path(node)
         if SvgUtils.is_group(node):
@@ -71,6 +73,9 @@ class SimpleVisitor:
 
     def _visit_circle(self, node: ET.ElementTree):
         return FadeEvent(node, self.out, 1)
+
+    def _visit_image(self, node: ET.ElementTree):
+        return FadeEvent(node, self.out, 600)
 
     def _visit_path(self, node: ET.ElementTree):
         return PathEvent(node, self.out)

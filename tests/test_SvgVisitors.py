@@ -2,6 +2,7 @@ from svganimator.CameraEvent import CameraEvent
 from svganimator.ParallelEventContainer import ParallelEventContainer
 from svganimator.PathEvent import PathEvent
 from svganimator.SequentialEventContainer import SequentialEventContainer
+from svganimator.FadeEvent import FadeEvent
 from svganimator.SvgVisitors import SimpleVisitor
 import io
 import unittest
@@ -89,13 +90,14 @@ class TestSimpleVisitor(unittest.TestCase):
             y="20.0"
             width="20.0"
             height="20.0"/>
+      <use id="use46"/>
       </svg>''')
 
     def test_grouped_root(self):
         out = io.StringIO()
         visitor = SimpleVisitor(out)
         events = visitor.visit_root(TestSimpleVisitor.nested_root)
-        self.assertEqual(len(events), 3)
+        self.assertEqual(len(events), 4)
 
         cam_event = events[0]
         self.assertIsInstance(cam_event, CameraEvent)
@@ -121,6 +123,9 @@ class TestSimpleVisitor(unittest.TestCase):
         self.assertEqual(cam_event2.duration, 4242)
         self.assertEqual(cam_event2.old_cam, [10.0, 20.0, 30.0, 40.0])
         self.assertEqual(cam_event2.new_cam, [20.0, 20.0, 20.0, 20.0])
+
+        image_event = events[3]
+        self.assertIsInstance(image_event, FadeEvent)
 
 
 if __name__ == '__main__':
